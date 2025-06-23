@@ -1,0 +1,6 @@
+# JetBrains IDE ignores
+.idea/
+backend/.idea/
+backend/bin/
+backend/obj/
+backend/.vs/
