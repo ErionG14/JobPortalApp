@@ -1,44 +1,65 @@
+using backend.DataSeed;
+using backend.DBContext;
+using backend.Middleware;
+using backend.Services;
+using Microsoft.EntityFrameworkCore; // Ensure these namespaces match your project structure
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+ServiceConfiguration.ConfigureServices(builder); // This method should contain all your services registrations
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
+
+// Exception Middleware should be very early to catch most exceptions
+app.UseMiddleware<ExceptionMiddleware>();
+
+// Development environment specific middleware
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+// CORS MUST come before Authentication/Authorization
+// Ensure "_myAllowSpecificOrigins" matches your policy name defined in ServiceConfiguration.ConfigureServices
+app.UseCors("_myAllowSpecificOrigins");
 
-var summaries = new[]
+app.UseHttpsRedirection(); // Redirect HTTP to HTTPS
+// app.UseStaticFiles(); // Generally not needed for a pure API, but harmless
+// app.UseStatusCodePages(); // Good for development, provides basic response for status codes
+
+// --- CRITICAL SECTION: Apply Migrations and Seed Roles/Data ---
+using (var scope = app.Services.CreateScope())
 {
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
+    var services = scope.ServiceProvider;
+    try
     {
-        var forecast = Enumerable.Range(1, 5).Select(index =>
-                new WeatherForecast
-                (
-                    DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-                    Random.Shared.Next(-20, 55),
-                    summaries[Random.Shared.Next(summaries.Length)]
-                ))
-            .ToArray();
-        return forecast;
-    })
-    .WithName("GetWeatherForecast")
-    .WithOpenApi();
+        var context = services.GetRequiredService<ApplicationDbContext>();
+        context.Database.Migrate(); // Apply any pending migrations
+
+        // Ensure roles are seeded here
+        await RoleInitializer.SeedRoles(services); // <-- THIS IS THE CALL YOU NEED TO VERIFY
+
+        // Optional: If you decided to move ALL user/role seeding out of OnModelCreating,
+        // you would call your admin/user seeder here as well.
+
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred during database migration or role seeding.");
+        // Consider re-throwing or exiting if this is a fatal startup error
+    }
+}
+
+// Authentication MUST come before Authorization
+app.UseAuthentication();
+app.UseAuthorization();
+
+// Map your API controllers
+app.MapControllers();
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
