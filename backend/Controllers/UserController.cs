@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace backend.Controllers;
 
@@ -38,22 +39,18 @@ public class UserController : ControllerBase
             Birthdate = model.Birthdate,
             Gender = model.Gender,
             PhoneNumber = model.PhoneNumber
-            // Add other properties as needed from your RegisterUserDto
         };
 
         var result = await _userManager.CreateAsync(user, model.Password);
 
         if (result.Succeeded)
         {
-            // Assign the default role "User" to the newly registered user
-            if (await _roleManager.RoleExistsAsync("User")) // Check if the role exists
+            if (await _roleManager.RoleExistsAsync("User"))
             {
                 await _userManager.AddToRoleAsync(user, "User");
             }
             else
             {
-                // Handle the case where the "User" role doesn't exist.
-                // You might want to log an error, create the role, or return a specific error to the client.
                 ModelState.AddModelError(string.Empty, "The 'User' role does not exist.");
                 return BadRequest(ModelState);
             }
@@ -89,14 +86,13 @@ public class UserController : ControllerBase
             Birthdate = model.Birthdate,
             Gender = model.Gender,
             PhoneNumber = model.PhoneNumber,
-            Role = model.Role // Set the Role property from the DTO
+            Role = model.Role 
         };
 
         var result = await _userManager.CreateAsync(user, model.Password);
 
         if (result.Succeeded)
         {
-            // Assign the specified role using RoleManager
             if (await _roleManager.RoleExistsAsync(model.Role.ToString()))
             {
                 await _userManager.AddToRoleAsync(user, model.Role.ToString());
@@ -117,7 +113,38 @@ public class UserController : ControllerBase
             return BadRequest(ModelState);
         }
     }
+    
+    [HttpGet("GetAllUsers")] 
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+    public async Task<IActionResult> GetAllUsers()
+    {
+       
+        var users = await _userManager.Users.ToListAsync();
+        
+        var userDtos = new List<UserResponseDTO>();
+        foreach (var user in users)
+        {
+            var identityRoles = await _userManager.GetRolesAsync(user);
 
+            userDtos.Add(new UserResponseDTO
+            {
+                Id = user.Id,
+                Email = user.Email,
+                UserName = user.UserName,
+                Name = user.Name,
+                Surname = user.Surname,
+                Address = user.Address,
+                Birthdate = user.Birthdate,
+                Gender = user.Gender,
+                PhoneNumber = user.PhoneNumber, 
+                Image = user.Image,
+                Role = user.Role 
+            });
+        }
+
+        return Ok(userDtos);
+    }
+    
     // Read single user by ID (Admin only)
     [HttpGet("GetUser{id}")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]

@@ -1,20 +1,38 @@
 using backend.DataSeed;
 using backend.Middleware;
 using backend.Services;
+using Microsoft.Extensions.Logging; 
+
 var builder = WebApplication.CreateBuilder(args);
-
-
 
 ServiceConfiguration.ConfigureServices(builder);
 
-
 var app = builder.Build();
+
+
 
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+    // app.UseDeveloperExceptionPage();
 }
+
+
+app.UseMiddleware<ExceptionMiddleware>();
+
+
+
+app.UseHttpsRedirection();
+app.UseStaticFiles();
+app.UseStatusCodePages();
+app.UseRouting();
+
+app.UseCors("_myAllowSpecificOrigins");
+
+app.UseAuthentication();
+app.UseAuthorization();
+app.MapControllers();
 
 using (var scope = app.Services.CreateScope())
 {
@@ -29,18 +47,5 @@ using (var scope = app.Services.CreateScope())
         logger.LogError(ex, "An error occurred while seeding roles.");
     }
 }
-
-app.UseCors("_myAllowSpecificOrigins");
-
-app.UseMiddleware<ExceptionMiddleware>();
-
-app.UseHttpsRedirection();
-app.UseStaticFiles();
-app.UseStatusCodePages();
-
-app.UseAuthentication();
-app.UseAuthorization();
-
-app.MapControllers();
 
 app.Run();

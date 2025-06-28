@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using backend.DBContext;
 using backend.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -14,7 +15,12 @@ public static class ServiceConfiguration
 {
     public static void ConfigureServices(WebApplicationBuilder builder)
     {
-        builder.Services.AddControllers();
+        builder.Services.AddControllers().AddJsonOptions(options =>
+        {
+            options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+            options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+        });
+        
         builder.Services.AddEndpointsApiExplorer();
 
         builder.Services.AddSwaggerGen(option =>
