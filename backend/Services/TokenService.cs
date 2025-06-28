@@ -10,7 +10,7 @@ namespace backend.Services;
 public class TokenService
 {
     private readonly IConfiguration _configuration;
-    private readonly UserManager<User> _userManager; 
+    private readonly UserManager<User> _userManager;
 
     public TokenService(IConfiguration configuration, UserManager<User> userManager)
     {
@@ -27,7 +27,9 @@ public class TokenService
             new Claim(ClaimTypes.Email, user.Email),
             new Claim(ClaimTypes.Role, user.Role.ToString())
         };
+
         
+
         var securityKey =
             new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtTokenSettings:SymmetricSecurityKey"]));
         var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
@@ -36,7 +38,8 @@ public class TokenService
         {
             Subject = new ClaimsIdentity(claims),
             Expires = DateTime.UtcNow.AddHours(
-                Convert.ToInt32(_configuration["JwtTokenSettings:TokenExpirationHours"] ?? "1")), 
+                Convert.ToInt32(_configuration["JwtTokenSettings:TokenExpirationHours"] ??
+                                "1")), // Configure expiration from appsettings
             Issuer = _configuration["JwtTokenSettings:ValidIssuer"],
             Audience = _configuration["JwtTokenSettings:ValidAudience"],
             SigningCredentials = credentials

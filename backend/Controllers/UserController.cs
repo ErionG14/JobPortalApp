@@ -11,8 +11,8 @@ namespace backend.Controllers;
 
 public class UserController : ControllerBase
 {
-   private readonly UserManager<User> _userManager;
-    private readonly RoleManager<IdentityRole> _roleManager;
+  private readonly UserManager<User> _userManager;
+  private readonly RoleManager<IdentityRole> _roleManager;
 
     public UserController(UserManager<User> userManager, RoleManager<IdentityRole> roleManager)
     {

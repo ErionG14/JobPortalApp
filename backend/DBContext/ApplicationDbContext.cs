@@ -7,18 +7,18 @@ namespace backend.DBContext
 {
     public class ApplicationDbContext : IdentityDbContext<User>
     {
-        // DbSet for your custom entities
-        
+
+
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
+
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            
             base.OnModelCreating(modelBuilder);
-            
+
             var hasher = new PasswordHasher<User>();
 
             var adminEmail = new ConfigurationBuilder()
@@ -30,7 +30,7 @@ namespace backend.DBContext
                 .AddJsonFile("appsettings.json")
                 .Build()
                 .GetSection("SiteSettings")["AdminPassword"];
-        
+
             if (!string.IsNullOrEmpty(adminEmail) && !string.IsNullOrEmpty(adminPassword))
             {
                 var adminUser = new User
@@ -52,7 +52,6 @@ namespace backend.DBContext
 
                 modelBuilder.Entity<User>().HasData(adminUser);
             }
-            
         }
     }
 }
