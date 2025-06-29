@@ -1,72 +1,60 @@
 // CustomTabBar.tsx
-// This component acts as the custom tab bar for Expo Router's Tabs navigator.
-// It is based on your Footer.tsx design and integrates with router navigation.
-
 import React from "react";
 import { View, Text, TouchableOpacity, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-// Import useLocalSearchParams, usePathname, useRouter for navigation state
-import { useLocalSearchParams, usePathname, useRouter } from "expo-router";
+import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
+import { usePathname, useRouter } from "expo-router";
 
-// Props passed from Expo Router's Tabs component
-interface CustomTabBarProps {
-  // state: Represents the navigation state (routes, index of active route)
-  state: {
-    index: number;
-    routes: Array<{
-      key: string;
-      name: string; // The 'name' of the Tabs.Screen (e.g., 'index', 'explore')
-      params?: Record<string, any>;
-    }>;
-  };
-  navigation: any; // The navigation object to navigate between tabs
-  descriptors: any; // Information about each screen (options, etc.)
-}
+import {
+  Home,
+  Search,
+  Plus,
+  Bell,
+  User,
+} from "lucide-react-native";
+
+type CustomTabBarProps = BottomTabBarProps;
 
 const CustomTabBar: React.FC<CustomTabBarProps> = ({
   state,
   navigation,
   descriptors,
 }) => {
-  const router = useRouter(); // Use useRouter for programmatic navigation
-  const pathname = usePathname(); // Get the current active path/route name
-
-  // Helper function to dynamically apply Tailwind text color class based on active tab
-  // This now checks if the current pathname matches the tab's route name
-  const getIconColor = (tabName: string) =>
-    pathname.startsWith(`/(tabs)/${tabName}`) ||
-    pathname.startsWith(`/${tabName}`)
-      ? "text-green-500"
-      : "text-gray-600";
-
-  // Helper function for the central "Add" button's background color
-  const getAddButtonColor = (tabName: string) =>
-    pathname.startsWith(`/(tabs)/${tabName}`) ||
-    pathname.startsWith(`/${tabName}`)
-      ? "bg-green-600"
-      : "bg-green-500"; // Slightly darker when active
+  const router = useRouter();
+  const pathname = usePathname();
 
   const tabs = [
-    { name: "index", icon: "🏠" }, // 'index' is usually the default tab for home
-    { name: "people", icon: "👥" },
-    { name: "calendar", icon: "📅" },
-    { name: "add", icon: "➕", isSpecial: true }, // Mark 'add' as special for styling
-    { name: "notifications", icon: "🔔" },
-    { name: "settings", icon: "⚙️" },
+    { name: "index", Icon: Home, isSpecial: false },
+    { name: "search", Icon: Search, isSpecial: false },
+    { name: "add", Icon: Plus, isSpecial: true },
+    { name: "notifications", Icon: Bell, isSpecial: false },
+    { name: "profile", Icon: User, isSpecial: false },
   ];
+
+  const getIconColor = (tabName: string) => {
+    const route = state.routes.find((r) => r.name === tabName);
+    const isFocused = state.index === state.routes.indexOf(route as any);
+    return isFocused ? "#9CA3AF" : "#9CA3AF";
+  };
+
+
+  const getAddButtonColor = (tabName: string) => {
+    const route = state.routes.find((r) => r.name === tabName);
+    const isFocused = state.index === state.routes.indexOf(route as any);
+
+    return isFocused ? "bg-blue-600" : "bg-blue-500";
+  };
 
   return (
     <SafeAreaView className="bg-white">
       <View className="flex-row justify-around items-center py-2 bg-white border-t border-gray-200 shadow-lg">
         {tabs.map((tab) => {
-          // Find the corresponding route object from the navigation state
           const route = state.routes.find((r) => r.name === tab.name);
-          // Get screen options to check if tab is focused for accessibility, etc.
-          const { options } = descriptors[route?.key || ""] || {};
-          const isFocused = state.index === state.routes.indexOf(route as any); // Check if this tab is the active one
+          const descriptor = descriptors[route?.key || ""];
+          const options = descriptor?.options || {};
+          const isFocused = state.index === state.routes.indexOf(route as any);
 
           const onPress = () => {
-            // Check if the tab is already focused
             const event = navigation.emit({
               type: "tabPress",
               target: route?.key,
@@ -74,14 +62,13 @@ const CustomTabBar: React.FC<CustomTabBarProps> = ({
             });
 
             if (!isFocused && !event.defaultPrevented) {
-              // Navigate to the tab if it's not already focused and event not prevented
               const routePath =
-                tab.name === "index"
-                  ? "/"
-                  : `/(${ "tabs" })/${tab.name}`;
-              router.push(routePath as any); // Cast as any to satisfy type
+                tab.name === "index" ? "/" : `/(tabs)/${tab.name}`;
+              router.push(routePath as any);
             }
           };
+
+          const TabIcon = tab.Icon;
 
           return (
             <TouchableOpacity
@@ -89,18 +76,19 @@ const CustomTabBar: React.FC<CustomTabBarProps> = ({
               className="flex-1 items-center py-1"
               onPress={onPress}
               accessibilityRole="button"
-              accessibilityState={isFocused ? { selected: true } : {}}
               accessibilityLabel={
                 options.tabBarAccessibilityLabel ||
-                `Navigate to ${options.title || tab.name}`
+                options.title ||
+                `Navigate to ${tab.name}`
               }
+              accessibilityState={isFocused ? { selected: true } : {}}
             >
               {tab.isSpecial ? (
                 // Special styling for the 'add' button
                 <View
-                  className={`rounded-full p-2 aspect-square flex items-center justify-center ${getAddButtonColor(
+                  className={`rounded-full p-3 aspect-square flex items-center justify-center ${getAddButtonColor(
                     tab.name
-                  )}`}
+                  )}`} 
                   style={{
                     shadowColor: "#4CAF50",
                     shadowOffset: { width: 0, height: 4 },
@@ -109,13 +97,11 @@ const CustomTabBar: React.FC<CustomTabBarProps> = ({
                     elevation: 6,
                   }}
                 >
-                  <Text className="text-3xl text-white">{tab.icon}</Text>
+                  {/* Lucide Plus icon for the special button */}
+                  <TabIcon size={28} color="white" strokeWidth={3} />{" "}
                 </View>
               ) : (
-                // Standard icon for other tabs
-                <Text className={`text-2xl ${getIconColor(tab.name)}`}>
-                  {tab.icon}
-                </Text>
+                <TabIcon size={24} color={getIconColor(tab.name)} />
               )}
             </TouchableOpacity>
           );

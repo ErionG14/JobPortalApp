@@ -30,12 +30,9 @@ const Header: React.FC<HeaderProps> = ({
         className="flex-row justify-between items-center px-5 py-4" // Tailwind classes for layout and padding
       >
         {showHamburger && (
-          // Tailwind classes for font size and color
           <Text className="text-2xl text-gray-800">☰</Text>
         )}{" "}
-        {/* Tailwind classes for font size, weight, and color */}
         <Text className="text-xl font-bold text-gray-800">{title}</Text>{" "}
-        {/* Tailwind class for width (24px) to balance layout */}
         <View className="w-6" />
       </View>
     </SafeAreaView>
