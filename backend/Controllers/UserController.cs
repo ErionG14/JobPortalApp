@@ -22,7 +22,7 @@ public class UserController : ControllerBase
     }
 
     [HttpPost("register")]
-    public async Task<IActionResult> Register(RegisterDTO model)
+    public async Task<IActionResult> Register([FromBody]RegisterDTO model)
     {
         if (!ModelState.IsValid)
         {

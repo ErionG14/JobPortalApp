@@ -118,7 +118,7 @@ public static class ServiceConfiguration
                 {
                     builder.WithOrigins("http://localhost:3000",
                                         "http://localhost:8081",
-                                        "http://10.0.2.2:5130")
+                                        "http://192.168.178.34:5130")
                         .AllowAnyHeader()
                         .AllowAnyMethod()
                         .AllowCredentials();

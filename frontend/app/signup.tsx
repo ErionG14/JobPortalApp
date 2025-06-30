@@ -8,6 +8,7 @@ import {
   Platform,
   Alert,
   ScrollView,
+  ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
@@ -20,11 +21,23 @@ import {
   Users,
   Phone,
 } from "lucide-react-native";
+
+// Import DatePicker (for Android/iOS)
 import DateTimePicker from "@react-native-community/datetimepicker";
+
+// Import Picker (for dropdown)
 import { Picker } from "@react-native-picker/picker";
+
+// Import your CustomButton component
 import CustomButton from "../components/CustomButton";
 
 interface SignUpScreenProps {}
+
+// --- IMPORTANT: CONFIGURE YOUR BACKEND API BASE URL HERE ---
+// Use your PC's actual local IP address if testing on a physical device or iOS simulator.
+// Use 'http://10.0.2.2:5130' for Android emulators.
+// Use 'http://localhost:5130' only for web browser testing on the same PC.
+const API_BASE_URL = "http://192.168.178.34:5130"; // <--- ENSURE THIS IS YOUR CORRECT BACKEND URL
 
 const SignUpScreen: React.FC<SignUpScreenProps> = () => {
   const [username, setUsername] = useState("");
@@ -38,10 +51,11 @@ const SignUpScreen: React.FC<SignUpScreenProps> = () => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [gender, setGender] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const router = useRouter();
 
-  const handleSignUp = () => {
+  const handleSignUp = async () => {
     if (
       !username ||
       !name ||
@@ -63,19 +77,61 @@ const SignUpScreen: React.FC<SignUpScreenProps> = () => {
       return;
     }
 
-    console.log("Attempting sign up with:", {
-      username,
-      name,
-      surname,
-      email,
-      password,
-      address,
-      birthdate: birthdate.toISOString().split("T")[0],
-      gender,
-      phoneNumber,
-    });
-    Alert.alert("Sign Up Success", "Account created successfully!");
-    // router.replace('/login');
+    setLoading(true);
+
+    try {
+      // Prepare the data payload for RegisterDTO
+      const registerData = {
+        username: username,
+        name: name,
+        surname: surname,
+        email: email,
+        password: password,
+        confirmPassword: confirmPassword,
+        address: address,
+        birthdate: birthdate.toISOString().split("T")[0],
+        gender: gender,
+        phoneNumber: phoneNumber,
+      };
+
+      console.log("Attempting sign up with:", registerData);
+
+      const response = await fetch(`${API_BASE_URL}/api/User/register`, {
+        // <--- API Call
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(registerData),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        Alert.alert(
+          "Registration Successful",
+          data.Message || "Account created successfully!"
+        );
+        console.log("Registration successful!", data);
+        router.replace("/login");
+      } else {
+        const errorMessage =
+          data.Message ||
+          data.title ||
+          (data.errors && Object.values(data.errors).flat().join("\n")) ||
+          "An unknown error occurred during registration.";
+        Alert.alert("Registration Failed", errorMessage);
+        console.error("Registration error:", data);
+      }
+    } catch (error) {
+      Alert.alert(
+        "Network Error",
+        "Could not connect to the server. Please try again."
+      );
+      console.error("Network or parsing error:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const navigateToLogin = () => {
@@ -121,6 +177,7 @@ const SignUpScreen: React.FC<SignUpScreenProps> = () => {
             autoCapitalize="none"
             value={username}
             onChangeText={setUsername}
+            editable={!loading}
           />
         </View>
 
@@ -133,6 +190,7 @@ const SignUpScreen: React.FC<SignUpScreenProps> = () => {
             placeholderTextColor={placeholderColor}
             value={name}
             onChangeText={setName}
+            editable={!loading}
           />
         </View>
 
@@ -145,6 +203,7 @@ const SignUpScreen: React.FC<SignUpScreenProps> = () => {
             placeholderTextColor={placeholderColor}
             value={surname}
             onChangeText={setSurname}
+            editable={!loading}
           />
         </View>
 
@@ -159,6 +218,7 @@ const SignUpScreen: React.FC<SignUpScreenProps> = () => {
             autoCapitalize="none"
             value={email}
             onChangeText={setEmail}
+            editable={!loading}
           />
         </View>
 
@@ -172,6 +232,7 @@ const SignUpScreen: React.FC<SignUpScreenProps> = () => {
             secureTextEntry
             value={password}
             onChangeText={setPassword}
+            editable={!loading}
           />
         </View>
 
@@ -185,6 +246,7 @@ const SignUpScreen: React.FC<SignUpScreenProps> = () => {
             secureTextEntry
             value={confirmPassword}
             onChangeText={setConfirmPassword}
+            editable={!loading}
           />
         </View>
 
@@ -197,6 +259,7 @@ const SignUpScreen: React.FC<SignUpScreenProps> = () => {
             placeholderTextColor={placeholderColor}
             value={address}
             onChangeText={setAddress}
+            editable={!loading}
           />
         </View>
 
@@ -204,6 +267,7 @@ const SignUpScreen: React.FC<SignUpScreenProps> = () => {
         <TouchableOpacity
           onPress={showDatepicker}
           className={inputWrapperClassName}
+          disabled={loading}
         >
           <CalendarDays size={20} color="#6B7280" />
           <TextInput
@@ -239,6 +303,7 @@ const SignUpScreen: React.FC<SignUpScreenProps> = () => {
             onValueChange={(itemValue) => setGender(itemValue as string)}
             style={{ flex: 1, height: "100%", color: "#4B5563" }}
             itemStyle={{ fontSize: 16 }}
+            enabled={!loading}
           >
             <Picker.Item
               label="Select Gender"
@@ -262,16 +327,21 @@ const SignUpScreen: React.FC<SignUpScreenProps> = () => {
             keyboardType="phone-pad"
             value={phoneNumber}
             onChangeText={setPhoneNumber}
+            editable={!loading}
           />
         </View>
 
         {/* Sign Up Button */}
         <CustomButton
-          title="Sign Up"
+          title={loading ? "Registering..." : "Sign Up"}
           onPress={handleSignUp}
           className="mt-4 mb-6"
+          disabled={loading}
         />
-        <TouchableOpacity onPress={navigateToLogin}>
+        <TouchableOpacity
+          onPress={navigateToLogin}
+          disabled={loading}
+        >
           <Text className="text-gray-600 text-sm">
             Already have an account?{" "}
             <Text className="text-blue-600 font-semibold underline">

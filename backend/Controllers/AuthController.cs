@@ -6,8 +6,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace backend.Controllers;
 
-
-
+[ApiController]
+[Route("api/[controller]")]
 public class AuthController : ControllerBase
 {
     private readonly UserManager<User> _userManager;
@@ -22,7 +22,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("login")]
-    public async Task<IActionResult> Login(LoginDTO model)
+    public async Task<IActionResult> Login([FromBody]LoginDTO model)
     {
         if (!ModelState.IsValid)
         {

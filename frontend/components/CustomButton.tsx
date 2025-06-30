@@ -9,6 +9,7 @@ interface CustomButtonProps {
   style?: ViewStyle;
   textClassName?: string;
   textStyle?: TextStyle;
+  disabled?: boolean;
 }
 
 const CustomButton: React.FC<CustomButtonProps> = ({
@@ -18,6 +19,7 @@ const CustomButton: React.FC<CustomButtonProps> = ({
   style = {},
   textClassName = "",
   textStyle = {},
+  disabled = false,
 }) => {
   return (
     <TouchableOpacity
@@ -28,9 +30,11 @@ const CustomButton: React.FC<CustomButtonProps> = ({
         shadowOpacity: 0.3,
         shadowRadius: 5,
         elevation: 6,
+        opacity: disabled ? 0.6 : 1,
         ...style,
       }}
       onPress={onPress}
+      disabled={disabled}
     >
       <Text
         className={`text-white text-lg font-semibold ${textClassName}`}

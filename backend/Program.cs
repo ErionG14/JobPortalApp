@@ -8,6 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 ServiceConfiguration.ConfigureServices(builder);
 
 var app = builder.Build();
+app.Urls.Add("http://0.0.0.0:5130");
 
 
 

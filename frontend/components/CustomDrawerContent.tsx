@@ -1,23 +1,59 @@
 // CustomDrawerContent.tsx
 import React from "react";
-import { View, Text, TouchableOpacity, Linking, Alert } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Linking,
+  Alert,
+  ActivityIndicator,
+} from "react-native";
 import {
   DrawerContentScrollView,
   DrawerContentComponentProps,
 } from "@react-navigation/drawer";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { User, LogIn, Settings, Info, Home } from "lucide-react-native";
+import { User, LogIn, Settings, Info, Home, LogOut } from "lucide-react-native";
+
+import { useAuth } from "../context/AuthContext";
 
 interface CustomDrawerContentProps extends DrawerContentComponentProps {}
 
 const CustomDrawerContent: React.FC<CustomDrawerContentProps> = (props) => {
   const router = useRouter();
+  const { user, logout, isLoading } = useAuth();
 
   const navigateTo = (path: string) => {
-    router.push(path as any);
     props.navigation.closeDrawer();
+    router.push(path as any);
   };
+
+  const handleLogout = async () => {
+    Alert.alert("Logout", "Are you sure you want to log out?", [
+      {
+        text: "Cancel",
+        style: "cancel",
+      },
+      {
+        text: "Logout",
+        onPress: async () => {
+          await logout();
+          router.replace("/login");
+        },
+      },
+    ]);
+  };
+
+  // Show loading indicator or handle initial state if user is still loading
+  if (isLoading) {
+    return (
+      <SafeAreaView className="flex-1 items-center justify-center">
+        <ActivityIndicator size="large" color="#3B82F6" />
+        <Text className="mt-4 text-gray-600">Loading user data...</Text>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <DrawerContentScrollView {...props} className="flex-1 bg-white">
@@ -27,8 +63,21 @@ const CustomDrawerContent: React.FC<CustomDrawerContentProps> = (props) => {
           <View className="w-20 h-20 rounded-full bg-blue-200 flex items-center justify-center mb-2">
             <User size={40} color="#3B82F6" />
           </View>
-          <Text className="text-xl font-bold text-gray-800">Welcome User!</Text>
-          <Text className="text-sm text-gray-600">user@example.com</Text>
+          {user ? (
+            <>
+              <Text className="text-xl font-bold text-gray-800">
+                Welcome {user.name}!
+              </Text>
+              <Text className="text-sm text-gray-600">{user.email}</Text>
+            </>
+          ) : (
+            <>
+              <Text className="text-xl font-bold text-gray-800">
+                Welcome Guest!
+              </Text>
+              <Text className="text-sm text-gray-600">Please log in</Text>
+            </>
+          )}
         </View>
 
         {/* Custom Navigation Items */}
@@ -40,13 +89,15 @@ const CustomDrawerContent: React.FC<CustomDrawerContentProps> = (props) => {
           <Text className="text-lg text-gray-700">Home</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          className="flex-row items-center px-5 py-3 border-b border-gray-100"
-          onPress={() => navigateTo("/login")}
-        >
-          <LogIn size={20} color="#6B7280" className="mr-4" />
-          <Text className="text-lg text-gray-700">Login / Sign Up</Text>
-        </TouchableOpacity>
+        {!user && (
+          <TouchableOpacity
+            className="flex-row items-center px-5 py-3 border-b border-gray-100"
+            onPress={() => navigateTo("/login")}
+          >
+            <LogIn size={20} color="#6B7280" className="mr-4" />
+            <Text className="text-lg text-gray-700">Login / Sign Up</Text>
+          </TouchableOpacity>
+        )}
 
         <TouchableOpacity
           className="flex-row items-center px-5 py-3 border-b border-gray-100"
@@ -63,6 +114,16 @@ const CustomDrawerContent: React.FC<CustomDrawerContentProps> = (props) => {
           <Info size={20} color="#6B7280" className="mr-4" />
           <Text className="text-lg text-gray-700">About</Text>
         </TouchableOpacity>
+
+        {user && (
+          <TouchableOpacity
+            className="flex-row items-center px-5 py-3 border-b border-gray-100 mt-4 bg-red-50"
+            onPress={handleLogout}
+          >
+            <LogOut size={20} color="#EF4444" className="mr-4" />
+            <Text className="text-lg text-red-600 font-semibold">Log Out</Text>
+          </TouchableOpacity>
+        )}
       </SafeAreaView>
     </DrawerContentScrollView>
   );
