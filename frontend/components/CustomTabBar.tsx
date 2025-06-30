@@ -23,6 +23,7 @@ const CustomTabBar: React.FC<CustomTabBarProps> = ({
   const router = useRouter();
   const pathname = usePathname();
 
+
   const tabs = [
     { name: "index", Icon: Home, isSpecial: false },
     { name: "search", Icon: Search, isSpecial: false },
@@ -30,6 +31,7 @@ const CustomTabBar: React.FC<CustomTabBarProps> = ({
     { name: "notifications", Icon: Bell, isSpecial: false },
     { name: "profile", Icon: User, isSpecial: false },
   ];
+
 
   const getIconColor = (tabName: string) => {
     const route = state.routes.find((r) => r.name === tabName);
@@ -41,7 +43,6 @@ const CustomTabBar: React.FC<CustomTabBarProps> = ({
   const getAddButtonColor = (tabName: string) => {
     const route = state.routes.find((r) => r.name === tabName);
     const isFocused = state.index === state.routes.indexOf(route as any);
-
     return isFocused ? "bg-blue-600" : "bg-blue-500";
   };
 
@@ -84,11 +85,10 @@ const CustomTabBar: React.FC<CustomTabBarProps> = ({
               accessibilityState={isFocused ? { selected: true } : {}}
             >
               {tab.isSpecial ? (
-                // Special styling for the 'add' button
                 <View
                   className={`rounded-full p-3 aspect-square flex items-center justify-center ${getAddButtonColor(
                     tab.name
-                  )}`} 
+                  )}`}
                   style={{
                     shadowColor: "#4CAF50",
                     shadowOffset: { width: 0, height: 4 },
@@ -97,8 +97,7 @@ const CustomTabBar: React.FC<CustomTabBarProps> = ({
                     elevation: 6,
                   }}
                 >
-                  {/* Lucide Plus icon for the special button */}
-                  <TabIcon size={28} color="white" strokeWidth={3} />{" "}
+                  <TabIcon size={28} color="white" strokeWidth={3} />
                 </View>
               ) : (
                 <TabIcon size={24} color={getIconColor(tab.name)} />
