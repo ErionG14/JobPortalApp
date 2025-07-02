@@ -1,8 +1,8 @@
 import React, { useState, useCallback } from "react";
-import { View, Text, ScrollView, Image, TouchableOpacity } from "react-native";
+import { View, Text, ScrollView, Image, TouchableOpacity, Alert } from "react-native";
 import { ThumbsUp, MessageSquare, Share, FileText } from "lucide-react-native";
 import { useFocusEffect } from "expo-router";
-import { getPosts } from "../lib/PostStore"; // adjust path if needed
+import { deletePost, getPosts, updatePost } from "../lib/PostStore"; // adjust path if needed
 
 const defaultPosts = [
   {
@@ -34,6 +34,45 @@ const FeedScreen: React.FC = () => {
       setPosts(allPosts);
     }, [])
   );
+   const handleDelete = (id: string) => {
+    Alert.alert("Delete Post", "Are you sure you want to delete this post?", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Delete",
+        style: "destructive",
+        onPress: () => {
+          deletePost(id);
+          setPosts([...getPosts(), ...defaultPosts]);
+        },
+      },
+    ]);
+  };
+    const handleEdit = (id: string) => {
+    const post = posts.find((p) => p.id === id);
+    if (!post) return;
+
+    Alert.prompt(
+      "Edit Post",
+      "Update your post content:",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Save",
+          onPress: (newText) => {
+            if (newText) {
+              updatePost(id, newText);
+              setPosts([...getPosts(), ...defaultPosts]);
+            }
+          },
+        },
+      ],
+      "plain-text",
+      post.text
+    );
+  };
 
   return (
     <ScrollView
@@ -73,6 +112,20 @@ const FeedScreen: React.FC = () => {
             <TouchableOpacity className="p-2 rounded flex-row items-center">
               <Share size={20} color="#666666" />
             </TouchableOpacity>
+            <TouchableOpacity
+  className="p-2 rounded flex-row items-center"
+  onPress={() => handleEdit(post.id)}
+>
+  <Text className="text-xs text-blue-600">Edit</Text>
+</TouchableOpacity>
+
+{/* Delete Button */}
+<TouchableOpacity
+  className="p-2 rounded flex-row items-center"
+  onPress={() => handleDelete(post.id)}
+>
+  <Text className="text-xs text-red-500">Delete</Text>
+</TouchableOpacity>
           </View>
         </View>
       ))}

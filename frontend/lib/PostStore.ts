@@ -18,3 +18,15 @@ export const addPost = (post: Post) => {
 export const getPosts = () => {
   return globalPosts;
 };
+
+export const deletePost = (postId: string) => {
+  globalPosts = globalPosts.filter((p) => p.id !== postId);
+};
+
+export const updatePost = (postId: string, updatedText: string) => {
+  const post = globalPosts.find((p) => p.id === postId);
+  if (post) {
+    post.text = updatedText;
+    post.timeAgo = "Edited just now";
+  }
+};
