@@ -60,7 +60,7 @@ const LoginScreen: React.FC<LoginScreenProps> = () => {
         Alert.alert("Login Success", "You are now logged in!");
         console.log("Login successful! Token:", data.token);
 
-        await login(data.token); // <--- CALL login from AuthContext
+        await login(data.token);
         router.replace("/(tabs)");
       } else {
         const errorMessage =

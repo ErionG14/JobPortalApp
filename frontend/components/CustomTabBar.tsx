@@ -20,7 +20,7 @@ const CustomTabBar: React.FC<CustomTabBarProps> = ({
   const tabs = [
     { name: "index", Icon: Home, isSpecial: false },
     { name: "search", Icon: Search, isSpecial: false },
-    { name: "create-post", Icon: Plus, isSpecial: true }, // <--- CHANGED NAME TO "create-post"
+    { name: "create-post", Icon: Plus, isSpecial: true },
     { name: "notifications", Icon: Bell, isSpecial: false },
     { name: "profile", Icon: User, isSpecial: false },
   ];
@@ -28,8 +28,7 @@ const CustomTabBar: React.FC<CustomTabBarProps> = ({
   const getIconColor = (tabName: string) => {
     const route = state.routes.find((r) => r.name === tabName);
     const isFocused = state.index === state.routes.indexOf(route as any);
-    // Adjust colors for better visual feedback if needed
-    return isFocused ? "#9CA3AF" : "#9CA3AF"; // Example: green when focused
+    return isFocused ? "#9CA3AF" : "#9CA3AF";
   };
 
   const getAddButtonColor = (tabName: string) => {
@@ -48,13 +47,11 @@ const CustomTabBar: React.FC<CustomTabBarProps> = ({
           const isFocused = state.index === state.routes.indexOf(route as any);
 
           const onPress = () => {
-            // If it's the special tab, navigate to that tab's route name
             if (tab.isSpecial) {
-              navigation.navigate(tab.name as any); // <--- Use navigation.navigate with the tab's name
+              navigation.navigate(tab.name as any);
               return;
             }
 
-            // For regular tabs, emit the tabPress event and then push the route
             const event = navigation.emit({
               type: "tabPress",
               target: route?.key,

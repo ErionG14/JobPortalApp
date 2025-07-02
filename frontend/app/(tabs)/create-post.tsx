@@ -13,12 +13,12 @@ import {
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
 import { useAuth } from "../../context/AuthContext";
-import * as FileSystem from "expo-file-system"; // For reading image as Base64
+import * as FileSystem from "expo-file-system";
 
 // --- IMPORTANT: CONFIGURE YOUR BACKEND API BASE URL AND CLOUDINARY SETTINGS HERE ---
-const API_BASE_URL = "http://192.168.178.34:5130"; // <--- YOUR BACKEND IP AND PORT
-const CLOUDINARY_CLOUD_NAME = "digigigcr"; // <--- REPLACE WITH YOUR CLOUD NAME
-const CLOUDINARY_UPLOAD_PRESET = "job_portal_uploads"; // <--- REPLACE WITH YOUR UNSIGNED UPLOAD PRESET NAME
+const API_BASE_URL = "http://192.168.178.34:5130";
+const CLOUDINARY_CLOUD_NAME = "digigigcr";
+const CLOUDINARY_UPLOAD_PRESET = "job_portal_uploads";
 const CLOUDINARY_UPLOAD_URL = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`;
 
 interface CreatePostScreenProps {}
@@ -27,7 +27,7 @@ const CreatePostScreen: React.FC<CreatePostScreenProps> = () => {
   const router = useRouter();
   const { user } = useAuth();
   const [description, setDescription] = useState("");
-  const [imageUri, setImageUri] = useState<string | null>(null); // Local URI from image picker
+  const [imageUri, setImageUri] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const handleImagePick = () => {
@@ -221,7 +221,7 @@ const CreatePostScreen: React.FC<CreatePostScreenProps> = () => {
 
         {imageUri && (
           <Image
-            source={{ uri: imageUri }} // Still show local URI for preview
+            source={{ uri: imageUri }}
             style={{
               width: "100%",
               height: 180,
@@ -245,17 +245,15 @@ const CreatePostScreen: React.FC<CreatePostScreenProps> = () => {
         <TouchableOpacity
           onPress={handleSubmit}
           activeOpacity={0.9}
-          // --- STYLING CHANGES HERE ---
           style={{
-            backgroundColor: "#1D4ED8", // A slightly darker blue for the button
+            backgroundColor: "#1D4ED8",
             paddingVertical: 14,
             borderRadius: 12,
-            // More pronounced shadow for depth
-            shadowColor: "#1D4ED8", // Match shadow color to button color
-            shadowOffset: { width: 0, height: 6 }, // Increased height for more visible shadow
-            shadowOpacity: 0.3, // Increased opacity for darker shadow
-            shadowRadius: 8, // Increased radius for softer, wider shadow
-            elevation: 8, // Increased elevation for Android shadow
+            shadowColor: "#1D4ED8",
+            shadowOffset: { width: 0, height: 6 },
+            shadowOpacity: 0.3,
+            shadowRadius: 8,
+            elevation: 8,
             opacity: loading ? 0.7 : 1,
           }}
           disabled={loading}

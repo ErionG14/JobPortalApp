@@ -1,8 +1,5 @@
 // frontend/components/FeedScreen.tsx
-// This component displays the main feed content with repeatable post cards,
-// fetching real data from your backend API.
-
-import React, { useState, useEffect } from "react"; // Import useState and useEffect
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -11,19 +8,14 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
-} from "react-native"; // Import ActivityIndicator and Alert
-
-// Import Lucide icons
+} from "react-native";
 import {
   ThumbsUp,
   MessageSquare,
   Share,
   FileText,
   UserCircle,
-} from "lucide-react-native"; // Add UserCircle for default profile image
-
-// Import useAuth to potentially get the token (though GetAllPosts is AllowAnonymous)
-// and for consistent API_BASE_URL
+} from "lucide-react-native";
 import { useAuth } from "../context/AuthContext";
 
 // --- IMPORTANT: CONFIGURE YOUR BACKEND API BASE URL HERE ---
@@ -32,12 +24,11 @@ const API_BASE_URL = "http://192.168.178.34:5130"; // <--- ENSURE THIS IS YOUR C
 interface FeedScreenProps {}
 
 const FeedScreen: React.FC<FeedScreenProps> = () => {
-  const { user } = useAuth(); // Get user context (even if not used for auth, useful for API_BASE_URL consistency)
-  const [posts, setPosts] = useState<any[]>([]); // State to store fetched posts
-  const [loading, setLoading] = useState(true); // State for loading indicator
-  const [error, setError] = useState<string | null>(null); // State for error messages
+  const { user } = useAuth();
+  const [posts, setPosts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Helper function to calculate time ago (simple version)
   const getTimeAgo = (createdAt: string) => {
     const postDate = new Date(createdAt);
     const now = new Date();
@@ -80,12 +71,10 @@ const FeedScreen: React.FC<FeedScreenProps> = () => {
     }
   };
 
-  // Fetch posts when the component mounts
   useEffect(() => {
     fetchPosts();
-  }, []); // Empty dependency array means this runs once on mount
+  }, []);
 
-  // --- Render Loading, Error, or Posts ---
   if (loading) {
     return (
       <View className="flex-1 justify-center items-center bg-gray-50">
@@ -146,19 +135,18 @@ const FeedScreen: React.FC<FeedScreenProps> = () => {
             <Text className="text-xs text-gray-500">
               {getTimeAgo(post.createdAt)}
             </Text>{" "}
-            {/* Calculate time ago */}
           </View>
 
           {/* Post Body Section (Text content and optional image) */}
           <View className="mb-2">
             <Text className="text-sm leading-5 text-gray-800">
-              {post.description} {/* Use actual description */}
+              {post.description}
             </Text>
             {/* Optional Image */}
-            {post.imageUrl && ( // Check if imageUrl exists
+            {post.imageUrl && (
               <Image
                 source={{
-                  uri: post.imageUrl, // Use actual image URL from backend
+                  uri: post.imageUrl,
                 }}
                 className="w-full h-48 rounded-md mt-2"
                 resizeMode="cover"
