@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Alert,
   TextInput,
+  Appearance,
 } from "react-native";
 import { ThumbsUp, MessageSquare, Share } from "lucide-react-native";
 import { useFocusEffect } from "expo-router";
@@ -38,8 +39,15 @@ const FeedScreen: React.FC = () => {
   const [searchText, setSearchText] = useState("");
   const [posts, setPosts] = useState<Post[]>([...getPosts(), ...defaultPosts]);
   const [filteredPosts, setFilteredPosts] = useState<Post[]>(posts);
+   const colorScheme = Appearance.getColorScheme();
+  const [isDarkMode, setIsDarkMode] = useState(colorScheme === "dark");
 
-  // Reload posts on screen focus
+  const toggleDarkMode = () => setIsDarkMode((prev) => !prev);
+
+ 
+  const bgColor = isDarkMode ? "#121212" : "#f9fafb";
+  const textColor = isDarkMode ? "#eee" : "#222";
+
   useFocusEffect(
     useCallback(() => {
       const allPosts = [...getPosts(), ...defaultPosts];
@@ -128,6 +136,7 @@ const FeedScreen: React.FC = () => {
           <Text className="text-center text-gray-500 mt-6">No posts found.</Text>
         ) : (
           filteredPosts.map((post) => (
+            
             <View
               key={post.id}
               className="bg-white rounded-lg p-4 mb-2 shadow"
@@ -153,7 +162,30 @@ const FeedScreen: React.FC = () => {
                     className="w-full h-48 rounded-md mt-2"
                     resizeMode="cover"
                   />
+
                 )}
+                 {/* Dark Mode Toggle Button */}
+      <TouchableOpacity
+        onPress={toggleDarkMode}
+        style={{
+          padding: 12,
+          backgroundColor: isDarkMode ? "#333" : "#ddd",
+          alignSelf: "center",
+          marginVertical: 16,
+          borderRadius: 8,
+        }}
+      >
+        <Text style={{ color: textColor, fontWeight: "bold" }}>
+          Switch to {isDarkMode ? "Light" : "Dark"} Mode
+        </Text>
+      </TouchableOpacity>
+
+      <ScrollView contentContainerStyle={{ padding: 16 }}>
+        <Text style={{ color: textColor, fontSize: 20, marginBottom: 12 }}>
+          Welcome to the Feed!
+        </Text>
+      
+      </ScrollView>
               </View>
 
               {/* Actions */}
