@@ -37,7 +37,7 @@ interface SignUpScreenProps {}
 // Use your PC's actual local IP address if testing on a physical device or iOS simulator.
 // Use 'http://10.0.2.2:5130' for Android emulators.
 // Use 'http://localhost:5130' only for web browser testing on the same PC.
-const API_BASE_URL = "http://192.168.178.34:5130"; // <--- ENSURE THIS IS YOUR CORRECT BACKEND URL
+const API_BASE_URL = "http://192.168.1.12:5130"; // <--- ENSURE THIS IS YOUR CORRECT BACKEND URL
 
 const SignUpScreen: React.FC<SignUpScreenProps> = () => {
   const [username, setUsername] = useState("");

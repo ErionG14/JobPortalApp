@@ -13,6 +13,7 @@ import {
   User,
 } from "lucide-react-native";
 
+
 type CustomTabBarProps = BottomTabBarProps;
 
 const CustomTabBar: React.FC<CustomTabBarProps> = ({
@@ -55,19 +56,24 @@ const CustomTabBar: React.FC<CustomTabBarProps> = ({
           const options = descriptor?.options || {};
           const isFocused = state.index === state.routes.indexOf(route as any);
 
-          const onPress = () => {
-            const event = navigation.emit({
-              type: "tabPress",
-              target: route?.key,
-              canPreventDefault: true,
-            });
+        const onPress = () => {
+  if (tab.isSpecial) {
+    router.push("/(tabs)/create-post" as any); // Navigate to CreatePost screen
+    return;
+  }
 
-            if (!isFocused && !event.defaultPrevented) {
-              const routePath =
-                tab.name === "index" ? "/" : `/(tabs)/${tab.name}`;
-              router.push(routePath as any);
-            }
-          };
+  const event = navigation.emit({
+    type: "tabPress",
+    target: route?.key,
+    canPreventDefault: true,
+  });
+
+  if (!isFocused && !event.defaultPrevented) {
+    const routePath = tab.name === "index" ? "/" : `/(tabs)/${tab.name}`;
+    router.push(routePath as any);
+  }
+};
+
 
           const TabIcon = tab.Icon;
 
