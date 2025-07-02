@@ -8,6 +8,7 @@ namespace backend.DBContext
     public class ApplicationDbContext : IdentityDbContext<User>
     {
 
+        public DbSet<Post> Posts { get; set; } = null!;
 
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
