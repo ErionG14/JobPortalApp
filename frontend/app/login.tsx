@@ -15,7 +15,8 @@ import { User } from "lucide-react-native";
 import CustomButton from "../components/CustomButton";
 import { useAuth } from "../context/AuthContext";
 
-const API_BASE_URL = "http://192.168.178.34:5130"; // Ensure this is correct, same setup as the signup.tsx
+const API_BASE_URL = "http://192.168.0.35:5130"; // or 5130, depending on your .NET backend port
+
 
 interface LoginScreenProps {}
 
@@ -42,7 +43,7 @@ const LoginScreen: React.FC<LoginScreenProps> = () => {
     setLoading(true);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/Auth/login`, {
+      const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
