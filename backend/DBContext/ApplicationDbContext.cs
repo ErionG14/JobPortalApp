@@ -8,12 +8,12 @@ namespace backend.DBContext
     public class ApplicationDbContext : IdentityDbContext<User>
     {
 
-        public DbSet<Post> Posts { get; set; } = null!;
+       public DbSet<Post> Posts { get; set; }
 
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
-
+            
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -53,6 +53,12 @@ namespace backend.DBContext
 
                 modelBuilder.Entity<User>().HasData(adminUser);
             }
+            
+            modelBuilder.Entity<Post>()
+                .HasOne(p => p.User) // A Post has one User
+                .WithMany(u => u.Posts) // <--- CRUCIAL CHANGE: Reference the Posts collection on the User model
+                .HasForeignKey(p => p.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

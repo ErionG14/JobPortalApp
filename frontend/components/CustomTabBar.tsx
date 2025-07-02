@@ -5,14 +5,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import { usePathname, useRouter } from "expo-router";
 
-import {
-  Home,
-  Search,
-  Plus,
-  Bell,
-  User,
-} from "lucide-react-native";
-
+import { Home, Search, Plus, Bell, User } from "lucide-react-native";
 
 type CustomTabBarProps = BottomTabBarProps;
 
@@ -24,22 +17,20 @@ const CustomTabBar: React.FC<CustomTabBarProps> = ({
   const router = useRouter();
   const pathname = usePathname();
 
-
   const tabs = [
     { name: "index", Icon: Home, isSpecial: false },
     { name: "search", Icon: Search, isSpecial: false },
-    { name: "add", Icon: Plus, isSpecial: true },
+    { name: "create-post", Icon: Plus, isSpecial: true }, // <--- CHANGED NAME TO "create-post"
     { name: "notifications", Icon: Bell, isSpecial: false },
     { name: "profile", Icon: User, isSpecial: false },
   ];
 
-
   const getIconColor = (tabName: string) => {
     const route = state.routes.find((r) => r.name === tabName);
     const isFocused = state.index === state.routes.indexOf(route as any);
-    return isFocused ? "#9CA3AF" : "#9CA3AF";
+    // Adjust colors for better visual feedback if needed
+    return isFocused ? "#9CA3AF" : "#9CA3AF"; // Example: green when focused
   };
-
 
   const getAddButtonColor = (tabName: string) => {
     const route = state.routes.find((r) => r.name === tabName);
@@ -56,24 +47,26 @@ const CustomTabBar: React.FC<CustomTabBarProps> = ({
           const options = descriptor?.options || {};
           const isFocused = state.index === state.routes.indexOf(route as any);
 
-        const onPress = () => {
-  if (tab.isSpecial) {
-    router.push("/(tabs)/create-post" as any); // Navigate to CreatePost screen
-    return;
-  }
+          const onPress = () => {
+            // If it's the special tab, navigate to that tab's route name
+            if (tab.isSpecial) {
+              navigation.navigate(tab.name as any); // <--- Use navigation.navigate with the tab's name
+              return;
+            }
 
-  const event = navigation.emit({
-    type: "tabPress",
-    target: route?.key,
-    canPreventDefault: true,
-  });
+            // For regular tabs, emit the tabPress event and then push the route
+            const event = navigation.emit({
+              type: "tabPress",
+              target: route?.key,
+              canPreventDefault: true,
+            });
 
-  if (!isFocused && !event.defaultPrevented) {
-    const routePath = tab.name === "index" ? "/" : `/(tabs)/${tab.name}`;
-    router.push(routePath as any);
-  }
-};
-
+            if (!isFocused && !event.defaultPrevented) {
+              const routePath =
+                tab.name === "index" ? "/" : `/(tabs)/${tab.name}`;
+              router.push(routePath as any);
+            }
+          };
 
           const TabIcon = tab.Icon;
 

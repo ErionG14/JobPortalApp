@@ -6,7 +6,7 @@ using backend.Enums;
 
 namespace backend.Models;
 
-public class User : IdentityUser // Inheriting from IdentityUser is correct
+public class User : IdentityUser 
 {
     [Required]
     [StringLength(8, ErrorMessage = "First name cannot be longer than 8 characters.")]
@@ -29,7 +29,8 @@ public class User : IdentityUser // Inheriting from IdentityUser is correct
     public string? Image { get; set; }
     
     public Roles Role { get; set; }
+    
     public string? RefreshToken { get; set; }
     
-    
+   public ICollection<Post> Posts { get; set; }
 }
