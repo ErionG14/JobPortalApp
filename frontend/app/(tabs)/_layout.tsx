@@ -12,13 +12,18 @@ export default function TabLayout() {
       }}
       tabBar={(props) => <CustomTabBar {...props} />}
     >
-      {/* Ensure ALL these Tabs.Screen entries have an options prop */}
-      <Tabs.Screen name="index" options={{ title: "Home" }} />
-      <Tabs.Screen name="people" options={{ title: "People" }} />
-      <Tabs.Screen name="calendar" options={{ title: "Calendar" }} />
-      <Tabs.Screen name="add" options={{ title: "Add" }} />
-      <Tabs.Screen name="notifications" options={{ title: "Notifications" }} />
-      <Tabs.Screen name="settings" options={{ title: "Settings" }} />
+      <Tabs.Screen name="index" options={{ title: "Home" }} />{" "}
+      <Tabs.Screen name="people" options={{ title: "People" }} />{" "}
+      <Tabs.Screen name="calendar" options={{ title: "Calendar" }} />{" "}
+      <Tabs.Screen
+        name="create-post"
+        options={{
+          title: "Create Post",
+        }}
+      />
+      <Tabs.Screen name="notifications" options={{ title: "Notifications" }} />{" "}
+      <Tabs.Screen name="settings" options={{ title: "Settings" }} />{" "}
+      <Tabs.Screen name="profile" options={{ title: "Profile" }} />{" "}
     </Tabs>
   );
 }

@@ -278,6 +278,40 @@ public class UserController : ControllerBase
         _logger.LogInformation("UpdateMyProfile: User '{UserName}' (ID: {UserId}) updated their profile successfully.", user.UserName, userId);
         return Ok(new { Message = $"Your profile has been updated successfully." });
     }
+    
+    [HttpGet("MyProfile")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "User, Manager, Admin")]
+    public async Task<IActionResult> GetMyProfile()
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userId))
+        {
+            _logger.LogError("GetMyProfile: User ID not found in token for authenticated request.");
+            return Unauthorized(new { Message = "User ID not found in token." });
+        }
+
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user == null)
+        {
+            _logger.LogError("GetMyProfile: Authenticated user with ID {UserId} not found in database.", userId);
+            return NotFound(new { Message = "Authenticated user not found." });
+        }
+        
+        _logger.LogInformation("GetMyProfile: Retrieved profile for user '{UserName}' (ID: {UserId}).", user.UserName, userId);
+        return Ok(new
+        {
+            user.Id,
+            user.UserName,
+            user.Email,
+            user.Name,
+            user.Surname,
+            user.Address,
+            user.Birthdate,
+            user.Gender,
+            user.PhoneNumber,
+            user.Image
+        });
+    }
 
     // Delete user (Admin only)
     [HttpDelete("DeleteUser{id}")]

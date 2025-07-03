@@ -8,12 +8,17 @@ import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import "react-native-reanimated";
+
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { Drawer } from "expo-router/drawer";
+
 import { AuthProvider } from "../context/AuthContext";
+
 import Header from "../components/Header";
 import CustomDrawerContent from "../components/CustomDrawerContent";
+
 import { Home, LogIn, UserPlus } from "lucide-react-native";
+
 import "../global.css";
 
 export default function RootLayout() {
@@ -29,7 +34,6 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
       <AuthProvider>
-        {" "}
         <Drawer
           initialRouteName="(tabs)"
           screenOptions={{
@@ -41,15 +45,50 @@ export default function RootLayout() {
           }}
           drawerContent={(props) => <CustomDrawerContent {...props} />}
         >
-
-          {/* Main app content (tabs navigator group) */}
           <Drawer.Screen
             name="(tabs)"
             options={{
               headerShown: true,
-              header: ({ navigation }) => (
-                <Header title="Feed" showHamburger={true} />
-              ),
+              header: ({ navigation }) => {
+                const state = navigation.getState();
+                const tabsRoute = state.routes.find(
+                  (route) => route.name === "(tabs)"
+                );
+
+                let currentTabTitle = "Feed";
+
+                if (tabsRoute && tabsRoute.state) {
+                  const activeTabIndex = tabsRoute.state.index;
+                  let activeTabRouteName: string | undefined = undefined;
+                  if (
+                    typeof activeTabIndex === "number" &&
+                    tabsRoute.state.routes[activeTabIndex]
+                  ) {
+                    activeTabRouteName =
+                      tabsRoute.state.routes[activeTabIndex].name;
+                  }
+
+                  if (activeTabRouteName === "index") {
+                    currentTabTitle = "Feed";
+                  } else if (activeTabRouteName === "create-post") {
+                    currentTabTitle = "Create Post";
+                  } else if (activeTabRouteName === "people") {
+                    currentTabTitle = "People";
+                  } else if (activeTabRouteName === "calendar") {
+                    currentTabTitle = "Calendar";
+                  } else if (activeTabRouteName === "notifications") {
+                    currentTabTitle = "Notifications";
+                  } else if (activeTabRouteName === "settings") {
+                    currentTabTitle = "Settings";
+                  } else if (activeTabRouteName === "profile") {
+                    currentTabTitle = "My Profile";
+                  } else {
+                    currentTabTitle = activeTabRouteName ?? "Feed";
+                  }
+                }
+
+                return <Header title={currentTabTitle} showHamburger={true} />;
+              },
               drawerLabel: "Home",
               drawerIcon: ({ focused, color, size }) => (
                 <Home size={size} color={focused ? "#22C55E" : color} />
@@ -57,7 +96,7 @@ export default function RootLayout() {
             }}
           />
 
-          {/* Login screen, accessible as a separate item from the drawer menu */}
+          {/* Login screen */}
           <Drawer.Screen
             name="login"
             options={{
@@ -69,6 +108,7 @@ export default function RootLayout() {
             }}
           />
 
+          {/* Signup screen */}
           <Drawer.Screen
             name="signup"
             options={{
@@ -79,6 +119,18 @@ export default function RootLayout() {
               ),
             }}
           />
+
+          {/* --- Edit Profile Screen --- */}
+          <Drawer.Screen
+            name="edit-profile"
+            options={{
+              headerShown: false,
+              drawerItemStyle: { height: 0, overflow: "hidden" },
+              drawerLabel: () => null,
+            }}
+          />
+
+          {/* Not-found screen */}
           <Drawer.Screen
             name="+not-found"
             options={{
@@ -88,7 +140,7 @@ export default function RootLayout() {
             }}
           />
         </Drawer>
-      </AuthProvider>{" "}
+      </AuthProvider>
       <StatusBar style="auto" />
     </ThemeProvider>
   );

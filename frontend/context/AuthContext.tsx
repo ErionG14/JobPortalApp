@@ -8,12 +8,18 @@ import React, {
 import * as SecureStore from "expo-secure-store";
 import { jwtDecode } from "jwt-decode";
 import { Platform } from "react-native";
-
 interface User {
   id: string;
   email: string;
   name: string;
   token: string;
+  username?: string;
+  surname?: string;
+  address?: string;
+  birthdate?: string;
+  gender?: string;
+  phoneNumber?: string;
+  image?: string;
 }
 
 interface AuthContextType {
@@ -21,6 +27,7 @@ interface AuthContextType {
   login: (token: string) => Promise<void>;
   logout: () => Promise<void>;
   isLoading: boolean;
+  updateAuthUser: (updatedFields: Partial<User>) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -33,12 +40,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       const decodedToken: any = jwtDecode(token);
 
+      // Map claims to User interface
       const newUser: User = {
         id: decodedToken.nameid || "unknown",
         email: decodedToken.email,
         name:
           decodedToken.name || decodedToken.unique_name || decodedToken.email,
         token: token,
+        username: decodedToken.unique_name || decodedToken.name,
+        surname: decodedToken.family_name,
       };
       setUser(newUser);
 
@@ -99,8 +109,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const updateAuthUser = (updatedFields: Partial<User>) => {
+    setUser((prevUser) => {
+      if (!prevUser) return null;
+      return { ...prevUser, ...updatedFields };
+    });
+  };
+
   return (
-    <AuthContext.Provider value={{ user, login, logout, isLoading }}>
+    <AuthContext.Provider
+      value={{ user, login, logout, isLoading, updateAuthUser }}
+    >
       {children}
     </AuthContext.Provider>
   );

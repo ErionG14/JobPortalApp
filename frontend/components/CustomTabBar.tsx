@@ -5,7 +5,13 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import { usePathname, useRouter } from "expo-router";
 
-import { Home, Search, Plus, Bell, User } from "lucide-react-native";
+import {
+  Home,
+  Search,
+  Plus,
+  Bell,
+  User,
+} from "lucide-react-native";
 
 type CustomTabBarProps = BottomTabBarProps;
 
@@ -22,7 +28,7 @@ const CustomTabBar: React.FC<CustomTabBarProps> = ({
     { name: "search", Icon: Search, isSpecial: false },
     { name: "create-post", Icon: Plus, isSpecial: true },
     { name: "notifications", Icon: Bell, isSpecial: false },
-    { name: "profile", Icon: User, isSpecial: false },
+    { name: "profile", Icon: User, isSpecial: false }, // <--- Confirm name is "profile" and Icon is User
   ];
 
   const getIconColor = (tabName: string) => {
