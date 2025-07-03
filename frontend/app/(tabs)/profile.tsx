@@ -17,14 +17,14 @@ import {
   Phone,
   MapPin,
   Calendar,
-  User,
-  User as UserIcon,
+  User, // Corrected: Use 'Gender' directly
+  User as UserIcon, // Renamed 'User' to 'UserIcon' to avoid conflict
   Edit,
 } from "lucide-react-native";
 import { useRouter, useFocusEffect } from "expo-router";
 
 // --- IMPORTANT: CONFIGURE YOUR BACKEND API BASE URL HERE ---
-const API_BASE_URL = "http://192.168.178.34:5130"; // <--- ENSURE THIS IS YOUR CORRECT BACKEND URL
+const API_BASE_URL = "http://192.168.178.34:5130";
 
 interface UserProfile {
   id: string;
@@ -104,12 +104,14 @@ const ProfileScreen: React.FC = () => {
   }, [fetchProfile]);
 
   const handleEditProfile = () => {
-    // Navigate to a new screen for editing the profile
-    // Pass the current profile data to the edit screen so it can pre-fill the form
-    router.push({
-      pathname: "/edit-profile",
-      params: { profileData: JSON.stringify(profile) }, // Pass profile data as stringified JSON
-    });
+    if (profile) {
+      router.push({
+        pathname: "/edit-profile",
+        params: { profileData: JSON.stringify(profile) },
+      });
+    } else {
+      Alert.alert("Error", "Profile data not loaded yet. Please try again.");
+    }
   };
 
   if (loading && !refreshing) {
@@ -155,19 +157,22 @@ const ProfileScreen: React.FC = () => {
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }
     >
-      <View className="bg-white rounded-lg shadow-md mx-4 mt-4 p-6">
+      {/* Main content card with increased horizontal padding and adjusted vertical padding */}
+      <View className="bg-white rounded-lg shadow-md mx-4 mt-4 px-6 py-6">
         {/* Profile Header Section */}
-        <View className="flex-row items-center mb-4">
+        {/* Added pt-4 to push content down from the top of the card */}
+        <View className="flex-row items-center mb-6 pt-4">
+          {" "}
+          {/* <--- ADDED pt-4 here */}
           {/* Profile Picture or Placeholder */}
-          {profile.image ? ( // <--- Conditional rendering for image
+          {profile.image ? (
             <Image
               source={{ uri: profile.image }}
-              className="w-20 h-20 rounded-full mr-4"
+              className="w-15 h-15 rounded-full mr-4 pt-16"
               resizeMode="cover"
             />
           ) : (
-            // Fallback to UserCircle icon if no image
-            <View className="w-20 h-20 rounded-full bg-gray-200 justify-center items-center mr-4">
+            <View className="w-20 h-20 rounded-full bg-gray-200 justify-center items-center mt-4 mr-4">
               <UserCircle size={50} color="#6B7280" />
             </View>
           )}
@@ -189,20 +194,20 @@ const ProfileScreen: React.FC = () => {
         </View>
 
         {/* Contact Information Section */}
-        <View className="border-t border-gray-200 pt-4 mt-4">
-          <Text className="text-xl font-semibold text-gray-800 mb-3">
+        <View className="border-t border-gray-200 pt-4 pb-4 mt-4">
+          <Text className="text-xl font-semibold text-gray-800 mb-2 mt-1">
             Contact Info
           </Text>
 
           {profile.email && (
-            <View className="flex-row items-center mb-2">
+            <View className="flex-row items-center my-2 mb-2">
               <Mail size={20} color="#6B7280" className="mr-3" />
               <Text className="text-base text-gray-700">{profile.email}</Text>
             </View>
           )}
 
           {profile.phoneNumber && (
-            <View className="flex-row items-center mb-2">
+            <View className="flex-row items-center my-2 mb-2">
               <Phone size={20} color="#6B7280" className="mr-3" />
               <Text className="text-base text-gray-700">
                 {profile.phoneNumber}
@@ -211,7 +216,7 @@ const ProfileScreen: React.FC = () => {
           )}
 
           {profile.address && (
-            <View className="flex-row items-center mb-2">
+            <View className="flex-row items-center my-2">
               <MapPin size={20} color="#6B7280" className="mr-3" />
               <Text className="text-base text-gray-700">{profile.address}</Text>
             </View>
@@ -219,22 +224,22 @@ const ProfileScreen: React.FC = () => {
         </View>
 
         {/* Personal Details Section */}
-        <View className="border-t border-gray-200 pt-4 mt-4">
-          <Text className="text-xl font-semibold text-gray-800 mb-3">
+        <View className="border-t border-gray-200 pt-4 pb-4 mt-4">
+          <Text className="text-xl font-semibold text-gray-800 mb-3 mt-1">
             Personal Details
           </Text>
 
           {profile.birthdate && (
-            <View className="flex-row items-center mb-2">
-              <Calendar size={20} color="#6B7280" className="mr-3" />
-              <Text className="text-base text-gray-700">
+            <View className="flex-row items-center my-2 mt-2 mb-2">
+              <Calendar size={20} color="#6B7280" className="mr-2" />
+              <Text className="text-base text-gray-700 pb-4">
                 {new Date(profile.birthdate).toLocaleDateString()}
               </Text>
             </View>
           )}
 
           {profile.gender && (
-            <View className="flex-row items-center mb-2">
+            <View className="flex-row items-center my-2">
               <User size={20} color="#6B7280" className="mr-3" />
               <Text className="text-base text-gray-700">{profile.gender}</Text>
             </View>
@@ -242,11 +247,11 @@ const ProfileScreen: React.FC = () => {
         </View>
 
         {/* Other Details (e.g., Created At) */}
-        <View className="border-t border-gray-200 pt-4 mt-4">
-          <Text className="text-xl font-semibold text-gray-800 mb-3">
+        <View className="border-t border-gray-200 pt-4 pb-4 mt-4">
+          <Text className="text-xl font-semibold text-gray-800 mb-3 mt-1">
             Account Info
           </Text>
-          <View className="flex-row items-center mb-2">
+          <View className="flex-row items-center my-2">
             <UserIcon size={20} color="#6B7280" className="mr-3" />
             <Text className="text-base text-gray-700">
               Member since: {new Date(profile.createdAt).toLocaleDateString()}

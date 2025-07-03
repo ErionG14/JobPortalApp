@@ -280,12 +280,14 @@ const EditProfileScreen: React.FC = () => {
   return (
     <ScrollView className="flex-1 bg-gray-100 p-4">
       <View className="bg-white rounded-lg shadow-md p-6">
-        <Text className="text-2xl font-semibold text-gray-800 mb-6 text-center">
+        <Text className="text-2xl font-semibold text-gray-800 mb-6 mt-2 text-center">
           Edit Your Profile
         </Text>
 
-        {/* Profile Image Section */}
+        {/* Profile Image Section - now includes the button below it */}
         <View className="items-center mb-6">
+          {" "}
+          {/* items-center will center the image and the button */}
           {profileImageUri ? (
             <Image
               source={{ uri: profileImageUri }}
@@ -293,22 +295,24 @@ const EditProfileScreen: React.FC = () => {
               resizeMode="cover"
             />
           ) : (
-            <View className="w-32 h-32 rounded-full bg-gray-200 justify-center items-center border-2 border-gray-300">
+            <View className="w-32 h-32 rounded-full bg-gray-200 justify-center items-center border-2 border-gray-300 mt-2">
               <UserCircle size={60} color="#6B7280" />
             </View>
           )}
+          {/* Image picker button - centered below the image with margin-top */}
           <TouchableOpacity
             onPress={handleImagePick}
-            className="mt-4 bg-blue-500 py-2 px-4 rounded-full flex-row items-center shadow-sm"
+            className="bg-blue-500 p-3 rounded-full shadow-md mt-4 mb-2" // Removed absolute, added mt-4
             disabled={loading}
           >
-            <ImageIcon size={18} color="white" className="mr-2" />
-            <Text className="text-white font-semibold">Change Image</Text>
+            <ImageIcon size={20} color="white" />
           </TouchableOpacity>
         </View>
 
         {/* Form Fields */}
-        <Text className="text-lg font-semibold text-gray-800 mb-2">
+        <Text className="text-lg font-semibold text-gray-800 mb-2 text-center">
+          {" "}
+          {/* Added text-center */}
           Personal Information
         </Text>
         <TextInput
@@ -368,7 +372,7 @@ const EditProfileScreen: React.FC = () => {
           placeholderTextColor="#9CA3AF"
           value={formData.birthdate}
           onChangeText={(text) => handleInputChange("birthdate", text)}
-          keyboardType="numeric" // Or 'default' if you want to allow date picker input
+          keyboardType="numeric"
           editable={!loading}
         />
         <TextInput
