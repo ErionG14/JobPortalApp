@@ -118,6 +118,41 @@ public class PostController : ControllerBase
         return Ok(posts);
     }
     
+    [HttpGet("GetMyPosts")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "User,Manager")] // Only authenticated users can see their own posts
+    public async Task<IActionResult> GetMyPosts()
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        if (string.IsNullOrEmpty(userId))
+        {
+            _logger.LogError("GetMyPosts: User ID not found in token for authenticated request.");
+            return Unauthorized(new { Message = "User ID not found in token." });
+        }
+
+        var posts = await _context.Posts
+            .Where(p => p.UserId == userId)
+            .Include(p => p.User)
+            .OrderByDescending(p => p.CreatedAt)
+            .Select(p => new PostDisplayDTO 
+            {
+                Id = p.Id,
+                Description = p.Description,
+                ImageUrl = p.ImageUrl,
+                CreatedAt = p.CreatedAt,
+                UpdatedAt = p.UpdatedAt,
+                UserId = p.UserId,
+                UserName = p.User.UserName,
+                Name = p.User.Name,
+                Surname = p.User.Surname,
+                Image = p.User.Image
+            })
+            .ToListAsync();
+
+        _logger.LogInformation("GetMyPosts: Retrieved {Count} posts for user {UserId}.", posts.Count, userId);
+        return Ok(posts);
+    }
+    
     [HttpPut("UpdatePost{id}")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "User,Manager,Admin")] 
     public async Task<IActionResult> UpdatePost(int id, [FromBody] PostDTO model)
