@@ -26,7 +26,7 @@ const CustomTabBar: React.FC<CustomTabBarProps> = ({
 
   const tabs = [
     { name: "index", Icon: Home, isSpecial: false },
-    { name: "jobs", Icon: Search, isSpecial: false }, // <--- CHANGED: name is "jobs", Icon is still Search
+    { name: "jobs", Icon: Search, isSpecial: false },
     { name: "create-post", Icon: Plus, isSpecial: true },
     { name: "notifications", Icon: Bell, isSpecial: false },
     { name: "profile", Icon: User, isSpecial: false },
