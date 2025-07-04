@@ -82,6 +82,9 @@ export default function RootLayout() {
                     currentTabTitle = "Settings";
                   } else if (activeTabRouteName === "profile") {
                     currentTabTitle = "My Profile";
+                  } else if (activeTabRouteName === "jobs") {
+                    // Add this for the jobs tab
+                    currentTabTitle = "Jobs";
                   } else {
                     currentTabTitle = activeTabRouteName ?? "Feed";
                   }
@@ -120,7 +123,52 @@ export default function RootLayout() {
             }}
           />
 
-          {/* --- Edit Profile Screen --- */}
+          {/* --- ADDED/UPDATED SCREENS BELOW --- */}
+
+          {/* My Posted Jobs screen */}
+          <Drawer.Screen
+            name="my-posted-jobs"
+            options={{
+              drawerLabel: "My Posted Jobs",
+              title: "My Posted Jobs",
+              headerShown: true,
+            }}
+          />
+
+          {/* Create Job screen */}
+          <Drawer.Screen
+            name="create-job"
+            options={{
+              headerShown: true,
+              title: "Post New Job",
+              drawerLabel: () => null,
+              swipeEnabled: false,
+            }}
+          />
+
+          {/* Edit Job screen */}
+          <Drawer.Screen
+            name="edit-job"
+            options={{
+              headerShown: true,
+              title: "Edit Job",
+              drawerLabel: () => null,
+              swipeEnabled: false,
+            }}
+          />
+
+          {/* Apply Job Screen (now a single file, takes query params) */}
+          <Drawer.Screen
+            name="apply-job"
+            options={{
+              headerShown: true,
+              title: "Apply for Job",
+              drawerLabel: () => null,
+              swipeEnabled: false,
+            }}
+          />
+
+          {/* Edit Profile Screen (hidden from drawer) */}
           <Drawer.Screen
             name="edit-profile"
             options={{
@@ -130,7 +178,7 @@ export default function RootLayout() {
             }}
           />
 
-          {/* Not-found screen */}
+          {/* Not-found screen (hidden from drawer) */}
           <Drawer.Screen
             name="+not-found"
             options={{

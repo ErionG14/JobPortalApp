@@ -200,7 +200,7 @@ const CreateJobScreen: React.FC = () => {
       const result = await response.json();
       Alert.alert("Success", result.Message || "Job posted successfully!");
       console.log("Job created successfully:", result);
-      router.back(); // Go back to previous screen (e.g., My Posted Jobs or Jobs list)
+      router.back();
     } catch (err: any) {
       console.error("Error creating job:", err);
       setError(
@@ -416,7 +416,7 @@ const CreateJobScreen: React.FC = () => {
               mode="date"
               display="default"
               onChange={handleDateChange}
-              minimumDate={new Date()} // Cannot set a deadline in the past
+              minimumDate={new Date()}
             />
           )}
         </View>

@@ -35,4 +35,8 @@ public class User : IdentityUser
    public ICollection<Post> Posts { get; set; }
    
    public ICollection<Job> Jobs { get; set; }
+   
+   public ICollection<JobApplication> JobApplications { get; set; }
+   
+   public ICollection<Notification> Notifications { get; set; }
 }

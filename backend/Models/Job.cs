@@ -42,4 +42,6 @@ public class Job
    public string UserId { get; set; }
    
    public User User { get; set; }
+   
+   public ICollection<JobApplication> JobApplications { get; set; }
 }

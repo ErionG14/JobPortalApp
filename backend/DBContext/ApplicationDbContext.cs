@@ -10,6 +10,10 @@ namespace backend.DBContext
 
        public DbSet<Post> Posts { get; set; }
        public DbSet<Job> Jobs { get; set; }
+       
+       public DbSet<JobApplication> JobApplications { get; set; }
+       
+       public DbSet<Notification> Notifications { get; set; }
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
@@ -65,6 +69,35 @@ namespace backend.DBContext
                 .WithMany(u => u.Jobs) // A User (Manager) can post many Jobs
                 .HasForeignKey(j => j.UserId) // The foreign key is UserId in the Job model
                 .OnDelete(DeleteBehavior.Restrict);
+            
+            modelBuilder.Entity<JobApplication>()
+                .HasOne(ja => ja.Job) // A JobApplication belongs to one Job
+                .WithMany(j => j.JobApplications) // A Job can have many JobApplications
+                .HasForeignKey(ja => ja.JobId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
+            modelBuilder.Entity<JobApplication>()
+                .HasOne(ja => ja.User) // A JobApplication belongs to one User (Applicant)
+                .WithMany(u => u.JobApplications) // A User can have many JobApplications
+                .HasForeignKey(ja => ja.UserId)
+                .OnDelete(DeleteBehavior.Restrict); // Prevent deleting a User if they have job applications
+
+            // Add unique constraint to prevent a user from applying to the same job multiple times
+            modelBuilder.Entity<JobApplication>()
+                .HasIndex(ja => new { ja.JobId, ja.UserId })
+                .IsUnique();
+            
+            modelBuilder.Entity<Notification>()
+                .HasOne(n => n.User)
+                .WithMany(u => u.Notifications) // Links to ICollection<Notification> Notifications on User model
+                .HasForeignKey(n => n.UserId)
+                .OnDelete(DeleteBehavior.Cascade); // If User is deleted, delete their notifications
+
+            modelBuilder.Entity<Notification>()
+                .HasOne(n => n.Job) // Notification can optionally be linked to a Job
+                .WithMany() // No inverse navigation property on Job for Notifications
+                .HasForeignKey(n => n.JobId)
+                .OnDelete(DeleteBehavior.SetNull); // If Job is deleted, set JobId to null in notifications
         }
     }
 }

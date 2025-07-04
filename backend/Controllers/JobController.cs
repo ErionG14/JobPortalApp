@@ -139,7 +139,7 @@ public class JobController : ControllerBase
     }
     
    [HttpGet("GetMyPostedJobs")]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Manager")] // Only Managers can access
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Manager")]
     public async Task<IActionResult> GetMyPostedJobs()
     {
         var managerId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -151,10 +151,10 @@ public class JobController : ControllerBase
         }
 
         var jobs = await _context.Jobs
-                                 .Where(j => j.UserId == managerId) // Filter by the authenticated manager's ID
-                                 .Include(j => j.User) // Include the manager's user data
-                                 .OrderByDescending(j => j.PostedDate) // Order by newest jobs first
-                                 .Select(j => new JobDisplayDTO // <--- FIXED: Using JobDisplayDto here
+                                 .Where(j => j.UserId == managerId)
+                                 .Include(j => j.User)
+                                 .OrderByDescending(j => j.PostedDate)
+                                 .Select(j => new JobDisplayDTO
                                  {
                                      Id = j.Id,
                                      Title = j.Title,
@@ -170,7 +170,7 @@ public class JobController : ControllerBase
                                      ManagerUserName = j.User.UserName,
                                      ManagerName = j.User.Name,
                                      ManagerSurname = j.User.Surname,
-                                     ManagerImage = j.User.Image // Include manager's image here
+                                     ManagerImage = j.User.Image
                                  })
                                  .ToListAsync();
 
@@ -179,8 +179,8 @@ public class JobController : ControllerBase
     }
 
     [HttpPut("UpdateJob{id}")]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Manager")] // Managers and Admins can update
-    public async Task<IActionResult> UpdateJob(int id, [FromBody] JobDTO model) // Using JobDTO for update input
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Manager")]
+    public async Task<IActionResult> UpdateJob(int id, [FromBody] JobDTO model)
     {
         if (!ModelState.IsValid)
         {
@@ -197,7 +197,6 @@ public class JobController : ControllerBase
 
         var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-        // Check if the current user is the manager who posted the job OR an Admin
         if (currentUserId == null || (job.UserId != currentUserId && !User.IsInRole("Admin")))
         {
             _logger.LogWarning("UpdateJob: User {AttemptingUserId} attempted to update job {JobId} but is not owner or Admin.", currentUserId, id);
@@ -222,7 +221,7 @@ public class JobController : ControllerBase
     }
     
     [HttpDelete("DeleteJob{id}")]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Manager")] // Managers and Admins can delete
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Manager")]
     public async Task<IActionResult> DeleteJob(int id)
     {
         var job = await _context.Jobs.FindAsync(id);
@@ -233,8 +232,7 @@ public class JobController : ControllerBase
         }
 
         var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-        // Check if the current user is the manager who posted the job OR an Admin
+        
         if (currentUserId == null || (job.UserId != currentUserId && !User.IsInRole("Admin")))
         {
             _logger.LogWarning("DeleteJob: User {AttemptingUserId} attempted to delete job {JobId} but is not owner or Admin.", currentUserId, id);

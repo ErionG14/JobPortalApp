@@ -11,19 +11,19 @@ import {
   RefreshControl,
 } from "react-native";
 import {
-  Briefcase, // Icon for job
-  MapPin, // Icon for location
-  DollarSign, // Icon for salary
-  Calendar, // Icon for deadline
-  UserCircle, // Placeholder for manager image
-  Building, // Icon for company
+  Briefcase,
+  MapPin,
+  DollarSign,
+  Calendar,
+  UserCircle,
+  Building,
 } from "lucide-react-native";
 import { useAuth } from "../../context/AuthContext";
+import { useRouter } from "expo-router";
 
 // --- IMPORTANT: CONFIGURE YOUR BACKEND API BASE URL HERE ---
 const API_BASE_URL = "http://192.168.178.34:5130";
 
-// Interface for Job data (matching the anonymous type from GetAllJobs)
 interface JobListing {
   id: number;
   title: string;
@@ -33,25 +33,23 @@ interface JobListing {
   salaryMin: number | null;
   salaryMax: number | null;
   companyName: string;
-  postedDate: string; // ISO string
-  applicationDeadline: string; // ISO string
+  postedDate: string;
+  applicationDeadline: string;
   managerId: string;
   managerUserName: string;
-  managerFirstName: string;
-  managerLastName: string;
+  managerName: string;
+  managerSurname: string;
   managerImage: string | null;
-  createdAt: string; // ISO string
-  updatedAt: string; // ISO string
 }
 
 const JobsScreen: React.FC = () => {
-  const { user } = useAuth(); // Access the user object which contains the token
+  const { user, signOut } = useAuth();
+  const router = useRouter();
   const [jobs, setJobs] = useState<JobListing[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
-  // Helper function to format time ago (similar to posts)
   const getTimeAgo = (dateString: string) => {
     const postDate = new Date(dateString);
     const now = new Date();
@@ -71,7 +69,6 @@ const JobsScreen: React.FC = () => {
   };
 
   const fetchJobs = useCallback(async () => {
-    // Check if user and token exist before making an authorized request
     if (!user || !user.token) {
       setError("You must be logged in to view jobs.");
       setLoading(false);
@@ -86,16 +83,20 @@ const JobsScreen: React.FC = () => {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${user.token}`, // <--- ADDED: Authorization header
+          Authorization: `Bearer ${user.token}`,
         },
       });
 
       if (!response.ok) {
-        const errorText = await response.text(); // Get raw text for better debugging
-        console.error("API Response not OK:", response.status, errorText);
+        const errorText = await response.text();
+        console.error(
+          "API Response not OK for GetAllJobs:",
+          response.status,
+          errorText
+        );
         let errorMessage = "Failed to fetch jobs.";
         try {
-          const errorData = JSON.parse(errorText); // Try parsing as JSON
+          const errorData = JSON.parse(errorText);
           errorMessage =
             errorData.Message ||
             errorData.title ||
@@ -103,10 +104,9 @@ const JobsScreen: React.FC = () => {
               Object.values(errorData.errors).flat().join("\n")) ||
             errorMessage;
         } catch (e) {
-          // If not JSON, use the raw text
           errorMessage = `Server error: ${
             response.status
-          } ${errorText.substring(0, 100)}...`;
+          }. Details: ${errorText.substring(0, 150)}...`;
         }
         throw new Error(errorMessage);
       }
@@ -115,34 +115,67 @@ const JobsScreen: React.FC = () => {
       setJobs(data);
       console.log("Fetched jobs:", data);
     } catch (err: any) {
-      console.error("Error fetching jobs:", err);
-      setError(err.message || "An unexpected error occurred.");
-      Alert.alert("Error", err.message || "Failed to load jobs.");
+      console.error("Error fetching jobs (catch block):", err);
+      setError(
+        err.message || "An unexpected error occurred while loading jobs."
+      );
+      if (
+        err.message.includes("Unauthorized") ||
+        err.message.includes("401") ||
+        err.message.includes("403") ||
+        (err.message.includes("Server error") &&
+          (err.message.includes("401") || err.message.includes("403")))
+      ) {
+        Alert.alert("Session Expired", "Please log in again.", [
+          { text: "OK", onPress: signOut },
+        ]);
+      }
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [user]); // <--- ADDED 'user' to useCallback dependencies
+  }, [user, signOut]);
 
   useEffect(() => {
-    // Only fetch jobs if user is available (i.e., authenticated)
     if (user) {
       fetchJobs();
     } else {
-      setLoading(false); // If no user, stop loading and show message
+      setLoading(false);
       setError("Please log in to view job listings.");
     }
-  }, [user, fetchJobs]); // <--- ADDED 'user' to useEffect dependencies
+  }, [user, fetchJobs]);
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     if (user) {
-      // Only refresh if user is logged in
       fetchJobs();
     } else {
-      setRefreshing(false); // Stop refreshing if not logged in
+      setRefreshing(false);
     }
   }, [user, fetchJobs]);
+
+  const handleNavigateToApply = useCallback(
+    (jobId: number, jobTitle: string) => {
+      if (!user || !user.token) {
+        Alert.alert(
+          "Authentication Required",
+          "Please log in to apply for jobs."
+        );
+        return;
+      }
+
+      if (user.role !== "User") {
+        Alert.alert("Access Denied", "Only regular users can apply for jobs.");
+        return;
+      }
+
+      router.push({
+        pathname: "/apply-job",
+        params: { jobId: jobId.toString(), jobTitle: jobTitle },
+      });
+    },
+    [user, router]
+  );
 
   if (loading && !refreshing) {
     return (
@@ -160,7 +193,7 @@ const JobsScreen: React.FC = () => {
           Error: {error}
         </Text>
         <TouchableOpacity
-          onPress={fetchJobs} // This will now include the token
+          onPress={fetchJobs}
           className="bg-blue-500 py-3 px-6 rounded-lg"
         >
           <Text className="text-white text-base font-semibold">Try Again</Text>
@@ -208,7 +241,7 @@ const JobsScreen: React.FC = () => {
             )}
             <View className="flex-1">
               <Text className="text-base font-bold text-gray-800">
-                {job.managerFirstName} {job.managerLastName}
+                {job.managerName} {job.managerSurname}
               </Text>
               <Text className="text-sm text-gray-600">
                 @{job.managerUserName || "Manager"}
@@ -275,15 +308,26 @@ const JobsScreen: React.FC = () => {
             </Text>
           </View>
 
-          {/* Call to Action: Apply Button (Future feature) */}
-          <TouchableOpacity
-            onPress={() => Alert.alert("Apply", `Applying for: ${job.title}`)}
-            className="bg-blue-600 py-3 rounded-lg mt-4 shadow-md"
-          >
-            <Text className="text-white text-center text-base font-semibold">
-              Apply Now
-            </Text>
-          </TouchableOpacity>
+          {user && user.role === "User" && user.id !== job.managerId ? (
+            <TouchableOpacity
+              onPress={() => handleNavigateToApply(job.id, job.title)}
+              className="bg-blue-600 py-3 rounded-lg mt-4 shadow-md"
+            >
+              <Text className="text-white text-center text-base font-semibold">
+                Apply Now
+              </Text>
+            </TouchableOpacity>
+          ) : (
+            <View className="bg-gray-300 py-3 rounded-lg mt-4">
+              <Text className="text-gray-600 text-center text-base font-semibold">
+                {user && user.role !== "User"
+                  ? "Managers/Admins cannot apply"
+                  : user && user.id === job.managerId
+                  ? "You posted this job"
+                  : "Login to Apply"}
+              </Text>
+            </View>
+          )}
         </View>
       ))}
     </ScrollView>
