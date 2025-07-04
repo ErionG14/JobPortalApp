@@ -17,8 +17,7 @@ import {
   Phone,
   MapPin,
   Calendar,
-  User, // Corrected: Use 'Gender' directly
-  User as UserIcon, // Renamed 'User' to 'UserIcon' to avoid conflict
+  User as UserIcon,
   Edit,
 } from "lucide-react-native";
 import { useRouter, useFocusEffect } from "expo-router";
@@ -160,19 +159,17 @@ const ProfileScreen: React.FC = () => {
       {/* Main content card with increased horizontal padding and adjusted vertical padding */}
       <View className="bg-white rounded-lg shadow-md mx-4 mt-4 px-6 py-6">
         {/* Profile Header Section */}
-        {/* Added pt-4 to push content down from the top of the card */}
         <View className="flex-row items-center mb-6 pt-4">
-          {" "}
-          {/* <--- ADDED pt-4 here */}
           {/* Profile Picture or Placeholder */}
           {profile.image ? (
             <Image
               source={{ uri: profile.image }}
-              className="w-15 h-15 rounded-full mr-4 pt-16"
+              className="w-20 h-20 rounded-full mr-4 mt-2" // <--- Changed w-15 h-15 to w-20 h-20, removed pt-16
               resizeMode="cover"
             />
           ) : (
-            <View className="w-20 h-20 rounded-full bg-gray-200 justify-center items-center mt-4 mr-4">
+            <View className="w-20 h-20 rounded-full bg-gray-200 justify-center items-center mr-4">
+              {" "}
               <UserCircle size={50} color="#6B7280" />
             </View>
           )}
@@ -232,7 +229,7 @@ const ProfileScreen: React.FC = () => {
           {profile.birthdate && (
             <View className="flex-row items-center my-2 mt-2 mb-2">
               <Calendar size={20} color="#6B7280" className="mr-2" />
-              <Text className="text-base text-gray-700 pb-4">
+              <Text className="text-base text-gray-700">
                 {new Date(profile.birthdate).toLocaleDateString()}
               </Text>
             </View>
@@ -240,26 +237,13 @@ const ProfileScreen: React.FC = () => {
 
           {profile.gender && (
             <View className="flex-row items-center my-2">
-              <User size={20} color="#6B7280" className="mr-3" />
+              <UserIcon size={20} color="#6B7280" className="mr-3" />{" "}
+              {/* Using UserIcon for gender */}
               <Text className="text-base text-gray-700">{profile.gender}</Text>
             </View>
           )}
         </View>
 
-        {/* Other Details (e.g., Created At) */}
-        <View className="border-t border-gray-200 pt-4 pb-4 mt-4">
-          <Text className="text-xl font-semibold text-gray-800 mb-3 mt-1">
-            Account Info
-          </Text>
-          <View className="flex-row items-center my-2">
-            <UserIcon size={20} color="#6B7280" className="mr-3" />
-            <Text className="text-base text-gray-700">
-              Member since: {new Date(profile.createdAt).toLocaleDateString()}
-            </Text>
-          </View>
-        </View>
-
-        {/* Logout Button (Optional, but good to have on profile) */}
         <TouchableOpacity
           onPress={signOut}
           className="bg-red-500 py-3 rounded-lg mt-6 shadow"

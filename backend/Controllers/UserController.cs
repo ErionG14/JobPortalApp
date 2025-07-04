@@ -263,6 +263,7 @@ public class UserController : ControllerBase
         user.Birthdate = model.Birthdate;
         user.Gender = model.Gender;
         user.PhoneNumber = model.PhoneNumber;
+        user.Image = model.Image;
 
         var result = await _userManager.UpdateAsync(user);
         if (!result.Succeeded)

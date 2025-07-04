@@ -28,7 +28,7 @@ const CustomTabBar: React.FC<CustomTabBarProps> = ({
     { name: "search", Icon: Search, isSpecial: false },
     { name: "create-post", Icon: Plus, isSpecial: true },
     { name: "notifications", Icon: Bell, isSpecial: false },
-    { name: "profile", Icon: User, isSpecial: false }, // <--- Confirm name is "profile" and Icon is User
+    { name: "profile", Icon: User, isSpecial: false },
   ];
 
   const getIconColor = (tabName: string) => {

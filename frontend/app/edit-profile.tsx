@@ -15,6 +15,9 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useAuth } from "../context/AuthContext";
 import * as ImagePicker from "expo-image-picker";
 import * as FileSystem from "expo-file-system";
+import { Picker } from "@react-native-picker/picker";
+import DateTimePicker from "@react-native-community/datetimepicker";
+
 import {
   UserCircle,
   Mail,
@@ -62,6 +65,7 @@ const EditProfileScreen: React.FC = () => {
   });
   const [profileImageUri, setProfileImageUri] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
   useEffect(() => {
     if (params.profileData) {
@@ -109,6 +113,20 @@ const EditProfileScreen: React.FC = () => {
 
   const handleInputChange = (field: keyof typeof formData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleDateChange = (event: any, selectedDate?: Date) => {
+    setShowDatePicker(Platform.OS === "ios");
+    if (selectedDate) {
+      setFormData((prev) => ({
+        ...prev,
+        birthdate: selectedDate.toISOString().split("T")[0],
+      }));
+    }
+  };
+
+  const showDatepicker = () => {
+    setShowDatePicker(true);
   };
 
   const handleImagePick = () => {
@@ -255,6 +273,10 @@ const EditProfileScreen: React.FC = () => {
           name: formData.name,
           surname: formData.surname,
           image: finalImageUrl,
+          address: formData.address,
+          birthdate: formData.birthdate,
+          gender: formData.gender,
+          phoneNumber: formData.phoneNumber,
         });
         router.back();
       } else {
@@ -284,10 +306,7 @@ const EditProfileScreen: React.FC = () => {
           Edit Your Profile
         </Text>
 
-        {/* Profile Image Section - now includes the button below it */}
         <View className="items-center mb-6">
-          {" "}
-          {/* items-center will center the image and the button */}
           {profileImageUri ? (
             <Image
               source={{ uri: profileImageUri }}
@@ -302,7 +321,7 @@ const EditProfileScreen: React.FC = () => {
           {/* Image picker button - centered below the image with margin-top */}
           <TouchableOpacity
             onPress={handleImagePick}
-            className="bg-blue-500 p-3 rounded-full shadow-md mt-4 mb-2" // Removed absolute, added mt-4
+            className="bg-blue-500 p-3 rounded-full shadow-md mt-4 mb-2"
             disabled={loading}
           >
             <ImageIcon size={20} color="white" />
@@ -311,8 +330,6 @@ const EditProfileScreen: React.FC = () => {
 
         {/* Form Fields */}
         <Text className="text-lg font-semibold text-gray-800 mb-2 text-center">
-          {" "}
-          {/* Added text-center */}
           Personal Information
         </Text>
         <TextInput
@@ -366,23 +383,48 @@ const EditProfileScreen: React.FC = () => {
           onChangeText={(text) => handleInputChange("address", text)}
           editable={!loading}
         />
-        <TextInput
-          className="bg-gray-50 border border-gray-300 rounded-lg p-3 mb-3 text-gray-800"
-          placeholder="Birthdate (YYYY-MM-DD)"
-          placeholderTextColor="#9CA3AF"
-          value={formData.birthdate}
-          onChangeText={(text) => handleInputChange("birthdate", text)}
-          keyboardType="numeric"
-          editable={!loading}
-        />
-        <TextInput
-          className="bg-gray-50 border border-gray-300 rounded-lg p-3 mb-6 text-gray-800"
-          placeholder="Gender"
-          placeholderTextColor="#9CA3AF"
-          value={formData.gender}
-          onChangeText={(text) => handleInputChange("gender", text)}
-          editable={!loading}
-        />
+
+        {/* Birthdate Picker */}
+        <TouchableOpacity
+          onPress={showDatepicker}
+          className="bg-gray-50 border border-gray-300 rounded-lg p-3 mb-3 justify-center"
+          disabled={loading}
+        >
+          <Text
+            className={`text-base ${
+              formData.birthdate ? "text-gray-800" : "text-gray-400"
+            }`}
+          >
+            {formData.birthdate ? formData.birthdate : "Birthdate (YYYY-MM-DD)"}
+          </Text>
+        </TouchableOpacity>
+        {showDatePicker && (
+          <DateTimePicker
+            testID="dateTimePicker"
+            value={
+              formData.birthdate ? new Date(formData.birthdate) : new Date()
+            }
+            mode="date"
+            display="default"
+            onChange={handleDateChange}
+          />
+        )}
+
+        {/* Gender Dropdown */}
+        <View className="bg-gray-50 border border-gray-300 rounded-lg mb-6 overflow-hidden">
+          <Picker
+            selectedValue={formData.gender}
+            onValueChange={(itemValue) =>
+              handleInputChange("gender", itemValue)
+            }
+            style={{ height: 50, width: "100%", color: "#4B5563" }}
+            itemStyle={{ color: "#4B5563" }}
+            enabled={!loading}
+          >
+            <Picker.Item label="Male" value="Male" />
+            <Picker.Item label="Female" value="Female" />
+          </Picker>
+        </View>
 
         {/* Save Button */}
         <TouchableOpacity

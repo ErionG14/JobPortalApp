@@ -1,4 +1,4 @@
-// CustomDrawerContent.tsx
+// frontend/components/CustomDrawerContent.tsx
 import React from "react";
 import {
   View,
@@ -7,6 +7,7 @@ import {
   Linking,
   Alert,
   ActivityIndicator,
+  Image, // <--- Import Image component
 } from "react-native";
 import {
   DrawerContentScrollView,
@@ -23,6 +24,10 @@ interface CustomDrawerContentProps extends DrawerContentComponentProps {}
 const CustomDrawerContent: React.FC<CustomDrawerContentProps> = (props) => {
   const router = useRouter();
   const { user, logout, isLoading } = useAuth();
+
+  // --- ADD THIS CONSOLE.LOG ---
+  console.log("User object in CustomDrawerContent:", user);
+  // --- END CONSOLE.LOG ---
 
   const navigateTo = (path: string) => {
     props.navigation.closeDrawer();
@@ -60,9 +65,18 @@ const CustomDrawerContent: React.FC<CustomDrawerContentProps> = (props) => {
       <SafeAreaView className="flex-1" edges={["top", "left", "right"]}>
         {/* Drawer Header/User Info Section */}
         <View className="p-5 border-b border-gray-200 mb-4 bg-blue-50">
-          <View className="w-20 h-20 rounded-full bg-blue-200 flex items-center justify-center mb-2">
-            <User size={40} color="#3B82F6" />
-          </View>
+          {/* Conditional rendering for Profile Image/Icon */}
+          {user && user.image ? ( // <--- Check if user is logged in AND has an image
+            <Image
+              source={{ uri: user.image }}
+              className="w-20 h-20 rounded-full mr-2 mb-2" // <--- Same size and styling as placeholder
+              resizeMode="cover"
+            />
+          ) : (
+            <View className="w-20 h-20 rounded-full bg-blue-200 flex items-center justify-center mb-2">
+              <User size={40} color="#3B82F6" /> {/* Generic user icon */}
+            </View>
+          )}
           {user ? (
             <>
               <Text className="text-xl font-bold text-gray-800">

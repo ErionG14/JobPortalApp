@@ -49,7 +49,7 @@ const FeedScreen: React.FC<FeedScreenProps> = () => {
 
   const fetchPosts = async () => {
     setLoading(true);
-    setError(null); // Clear previous errors
+    setError(null);
 
     try {
       const response = await fetch(`${API_BASE_URL}/api/Post/GetAllPosts`);
@@ -60,7 +60,7 @@ const FeedScreen: React.FC<FeedScreenProps> = () => {
       }
 
       const data = await response.json();
-      setPosts(data); // Set the fetched posts to state
+      setPosts(data);
       console.log("Fetched posts:", data);
     } catch (err: any) {
       console.error("Error fetching posts:", err);
@@ -120,16 +120,24 @@ const FeedScreen: React.FC<FeedScreenProps> = () => {
         <View key={post.id} className="bg-white rounded-lg p-4 mb-2 shadow-sm">
           {/* Post Header Section (Profile info and time) */}
           <View className="flex-row items-center mb-2">
-            {/* Placeholder for Profile Image/Icon */}
-            <View className="w-10 h-10 rounded-full bg-gray-200 mr-2 flex justify-center items-center">
-              <UserCircle size={28} color="#6B7280" /> {/* Generic user icon */}
-            </View>
+            {/* Conditional rendering for Profile Image/Icon */}
+            {post.userImage ? (
+              <Image
+                source={{ uri: post.userImage }}
+                className="w-10 h-10 rounded-full mr-2"
+                resizeMode="cover"
+              />
+            ) : (
+              <View className="w-10 h-10 rounded-full bg-gray-200 mr-2 flex justify-center items-center">
+                <UserCircle size={28} color="#6B7280" />{" "}
+              </View>
+            )}
             <View className="flex-1">
               <Text className="text-base font-bold text-gray-800">
-                {post.userFirstName} {post.userLastName} {/* Use actual name */}
+                {post.userFirstName} {post.userLastName}
               </Text>
               <Text className="text-sm text-gray-600">
-                {post.userName || "User"} {/* Use UserName or fallback */}
+                @{post.userName || "User"}
               </Text>
             </View>
             <Text className="text-xs text-gray-500">

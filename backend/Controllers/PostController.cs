@@ -109,7 +109,8 @@ public class PostController : ControllerBase
                                       UserId = p.UserId,
                                       UserName = p.User.UserName,
                                       UserFirstName = p.User.Name,
-                                      UserLastName = p.User.Surname
+                                      UserLastName = p.User.Surname,
+                                      UserImage = p.User.Image
                                   })
                                   .ToListAsync();
 

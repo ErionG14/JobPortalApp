@@ -1,3 +1,4 @@
+// frontend/context/AuthContext.tsx
 import React, {
   createContext,
   useState,
@@ -8,6 +9,10 @@ import React, {
 import * as SecureStore from "expo-secure-store";
 import { jwtDecode } from "jwt-decode";
 import { Platform } from "react-native";
+
+// --- IMPORTANT: CONFIGURE YOUR BACKEND API BASE URL HERE ---
+const API_BASE_URL = "http://192.168.178.34:5130"; // <--- ENSURE THIS IS YOUR CORRECT BACKEND URL
+
 interface User {
   id: string;
   email: string;
@@ -19,7 +24,7 @@ interface User {
   birthdate?: string;
   gender?: string;
   phoneNumber?: string;
-  image?: string;
+  image?: string; // This is correctly defined
 }
 
 interface AuthContextType {
@@ -35,29 +40,72 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const fetchFullUserProfile = async (
+    token: string,
+    userId: string
+  ): Promise<User | null> => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/User/MyProfile`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        console.error(
+          "Failed to fetch full user profile:",
+          response.status,
+          await response.text()
+        );
+        return null;
+      }
+
+      const profileData = await response.json();
+      console.log("Fetched full profile data:", profileData);
+
+      const decodedToken: any = jwtDecode(token);
+
+      return {
+        id: userId,
+        email: profileData.email || decodedToken.email,
+        name: profileData.name || decodedToken.name || decodedToken.unique_name,
+        surname: profileData.surname || decodedToken.family_name,
+        username:
+          profileData.userName || decodedToken.unique_name || decodedToken.name,
+        address: profileData.address,
+        birthdate: profileData.birthdate,
+        gender: profileData.gender,
+        phoneNumber: profileData.phoneNumber,
+        image: profileData.image,
+        token: token,
+      };
+    } catch (error) {
+      console.error("Error fetching full user profile:", error);
+      return null;
+    }
+  };
 
   const processLogin = async (token: string) => {
     try {
       const decodedToken: any = jwtDecode(token);
+      const userId = decodedToken.nameid || "unknown"; 
+      const fullProfile = await fetchFullUserProfile(token, userId);
 
-      // Map claims to User interface
-      const newUser: User = {
-        id: decodedToken.nameid || "unknown",
-        email: decodedToken.email,
-        name:
-          decodedToken.name || decodedToken.unique_name || decodedToken.email,
-        token: token,
-        username: decodedToken.unique_name || decodedToken.name,
-        surname: decodedToken.family_name,
-      };
-      setUser(newUser);
-
-      if (Platform.OS === "ios" || Platform.OS === "android") {
-        await SecureStore.setItemAsync("userToken", token);
-        console.log("User logged in and token stored securely.");
+      if (fullProfile) {
+        setUser(fullProfile);
+        if (Platform.OS === "ios" || Platform.OS === "android") {
+          await SecureStore.setItemAsync("userToken", token);
+          console.log("User logged in and token stored securely.");
+        } else {
+          console.log("User logged in (token not stored securely on web).");
+        }
       } else {
-        console.log("User logged in (token not stored securely on web).");
-        // localStorage.setItem('userToken', token); // Optional: for web dev persistence
+        console.error(
+          "Failed to get full user profile after login. Logging out."
+        );
+        await logout();
       }
     } catch (error) {
       console.error("Error decoding token or processing login:", error);
@@ -66,7 +114,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         await SecureStore.deleteItemAsync("userToken");
         console.log("Invalid token cleared from secure store.");
       } else {
-        // localStorage.removeItem('userToken'); // Optional: for web dev persistence
         console.log("Invalid token not stored on web.");
       }
     }
@@ -78,13 +125,27 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (Platform.OS === "ios" || Platform.OS === "android") {
           const storedToken = await SecureStore.getItemAsync("userToken");
           if (storedToken) {
-            await processLogin(storedToken);
+            const decodedToken: any = jwtDecode(storedToken);
+            const userId = decodedToken.nameid || "unknown";
+
+            const fullProfile = await fetchFullUserProfile(storedToken, userId);
+            if (fullProfile) {
+              setUser(fullProfile);
+            } else {
+              console.error(
+                "Failed to load full user profile from storage. Logging out."
+              );
+              await SecureStore.deleteItemAsync("userToken");
+              setUser(null);
+            }
           }
         } else {
           console.log("Skipping secure store check on web.");
         }
       } catch (error) {
         console.error("Failed to load user from storage:", error);
+        await SecureStore.deleteItemAsync("userToken");
+        setUser(null);
       } finally {
         setIsLoading(false);
       }
@@ -94,7 +155,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const login = async (token: string) => {
+    setIsLoading(true);
     await processLogin(token);
+    setIsLoading(false);
   };
 
   const logout = async () => {
@@ -112,7 +175,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const updateAuthUser = (updatedFields: Partial<User>) => {
     setUser((prevUser) => {
       if (!prevUser) return null;
-      return { ...prevUser, ...updatedFields };
+      const newUser = { ...prevUser, ...updatedFields };
+      return newUser;
     });
   };
 
