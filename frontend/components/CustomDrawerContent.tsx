@@ -4,7 +4,7 @@ import {
   View,
   Text,
   TouchableOpacity,
-  Linking,
+  Linking, // Not used in this snippet, but kept if you use it elsewhere
   Alert,
   ActivityIndicator,
   Image,
@@ -22,7 +22,8 @@ import {
   Info,
   Home,
   LogOut,
-  Briefcase, // <--- Import Briefcase icon
+  Briefcase,
+  Users, // <--- NEW: Import Users icon for Admin Dashboard
 } from "lucide-react-native";
 
 import { useAuth } from "../context/AuthContext";
@@ -32,8 +33,6 @@ interface CustomDrawerContentProps extends DrawerContentComponentProps {}
 const CustomDrawerContent: React.FC<CustomDrawerContentProps> = (props) => {
   const router = useRouter();
   const { user, logout, isLoading } = useAuth();
-
-  // console.log("User object in CustomDrawerContent:", user); // Keep for debugging if needed
 
   const navigateTo = (path: string) => {
     props.navigation.closeDrawer();
@@ -124,17 +123,28 @@ const CustomDrawerContent: React.FC<CustomDrawerContentProps> = (props) => {
           </TouchableOpacity>
         )}
 
-        {/* --- MODIFIED: My Posted Jobs link (now always visible) --- */}
-        {user && ( // Only show if a user is logged in at all
+        {user && (
           <TouchableOpacity
             className="flex-row items-center px-5 py-3 border-b border-gray-100"
-            onPress={() => navigateTo("/my-posted-jobs")} // Navigate to the new screen
+            onPress={() => navigateTo("/my-posted-jobs")}
           >
             <Briefcase size={20} color="#6B7280" className="mr-4" />
             <Text className="text-lg text-gray-700">My Posted Jobs</Text>
           </TouchableOpacity>
         )}
-        {/* --- END MODIFIED --- */}
+
+        {/* --- NEW: Admin Dashboard Button (Conditional) --- */}
+        {user && user.role === "Admin" && (
+          <TouchableOpacity
+            className="flex-row items-center px-5 py-3 border-b border-gray-100"
+            onPress={() => navigateTo("/admin/dashboard")} // Navigate to the new dashboard screen
+          >
+            <Users size={20} color="#6B7280" className="mr-4" />{" "}
+            {/* Users icon */}
+            <Text className="text-lg text-gray-700">Admin Dashboard</Text>
+          </TouchableOpacity>
+        )}
+        {/* --- END NEW --- */}
 
         <TouchableOpacity
           className="flex-row items-center px-5 py-3 border-b border-gray-100"
