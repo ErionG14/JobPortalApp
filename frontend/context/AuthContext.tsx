@@ -1,4 +1,4 @@
-// frontend/context/AuthContext.tsx
+// frontend/cenottx / AuthContext.tsx;
 import React, {
   createContext,
   useState,
@@ -24,7 +24,8 @@ interface User {
   birthdate?: string;
   gender?: string;
   phoneNumber?: string;
-  image?: string; // This is correctly defined
+  image?: string;
+  role?: string; // <--- THIS IS THE CRUCIAL ADDITION: The role will be a string (e.g., "Manager", "User", "Admin")
 }
 
 interface AuthContextType {
@@ -40,6 +41,8 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Helper function to fetch full user profile from backend
   const fetchFullUserProfile = async (
     token: string,
     userId: string
@@ -80,6 +83,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         phoneNumber: profileData.phoneNumber,
         image: profileData.image,
         token: token,
+        role: profileData.role, // <--- THIS IS THE CRUCIAL ADDITION: Map the 'role' from profileData
       };
     } catch (error) {
       console.error("Error fetching full user profile:", error);
@@ -90,7 +94,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const processLogin = async (token: string) => {
     try {
       const decodedToken: any = jwtDecode(token);
-      const userId = decodedToken.nameid || "unknown"; 
+      const userId = decodedToken.nameid || "unknown";
       const fullProfile = await fetchFullUserProfile(token, userId);
 
       if (fullProfile) {

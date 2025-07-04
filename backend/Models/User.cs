@@ -33,4 +33,6 @@ public class User : IdentityUser
     public string? RefreshToken { get; set; }
     
    public ICollection<Post> Posts { get; set; }
+   
+   public ICollection<Job> Jobs { get; set; }
 }

@@ -404,15 +404,6 @@ const ProfileScreen: React.FC = () => {
             </View>
           )}
         </View>
-
-        <TouchableOpacity
-          onPress={signOut}
-          className="bg-red-500 py-3 rounded-lg mt-6 shadow"
-        >
-          <Text className="text-white text-center text-lg font-semibold">
-            Logout
-          </Text>
-        </TouchableOpacity>
       </View>
 
       {/* --- My Activity / User's Posts --- */}

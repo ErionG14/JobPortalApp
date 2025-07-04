@@ -9,7 +9,7 @@ namespace backend.DBContext
     {
 
        public DbSet<Post> Posts { get; set; }
-
+       public DbSet<Job> Jobs { get; set; }
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
@@ -59,6 +59,12 @@ namespace backend.DBContext
                 .WithMany(u => u.Posts) // <--- CRUCIAL CHANGE: Reference the Posts collection on the User model
                 .HasForeignKey(p => p.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
+            
+            modelBuilder.Entity<Job>()
+                .HasOne(j => j.User) // A Job has one User (Manager)
+                .WithMany(u => u.Jobs) // A User (Manager) can post many Jobs
+                .HasForeignKey(j => j.UserId) // The foreign key is UserId in the Job model
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

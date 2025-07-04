@@ -7,7 +7,7 @@ import {
   Linking,
   Alert,
   ActivityIndicator,
-  Image, // <--- Import Image component
+  Image,
 } from "react-native";
 import {
   DrawerContentScrollView,
@@ -15,7 +15,15 @@ import {
 } from "@react-navigation/drawer";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { User, LogIn, Settings, Info, Home, LogOut } from "lucide-react-native";
+import {
+  User,
+  LogIn,
+  Settings,
+  Info,
+  Home,
+  LogOut,
+  Briefcase, // <--- Import Briefcase icon
+} from "lucide-react-native";
 
 import { useAuth } from "../context/AuthContext";
 
@@ -25,9 +33,7 @@ const CustomDrawerContent: React.FC<CustomDrawerContentProps> = (props) => {
   const router = useRouter();
   const { user, logout, isLoading } = useAuth();
 
-  // --- ADD THIS CONSOLE.LOG ---
-  console.log("User object in CustomDrawerContent:", user);
-  // --- END CONSOLE.LOG ---
+  // console.log("User object in CustomDrawerContent:", user); // Keep for debugging if needed
 
   const navigateTo = (path: string) => {
     props.navigation.closeDrawer();
@@ -66,10 +72,10 @@ const CustomDrawerContent: React.FC<CustomDrawerContentProps> = (props) => {
         {/* Drawer Header/User Info Section */}
         <View className="p-5 border-b border-gray-200 mb-4 bg-blue-50">
           {/* Conditional rendering for Profile Image/Icon */}
-          {user && user.image ? ( // <--- Check if user is logged in AND has an image
+          {user && user.image ? (
             <Image
               source={{ uri: user.image }}
-              className="w-20 h-20 rounded-full mr-2 mb-2" // <--- Same size and styling as placeholder
+              className="w-20 h-20 rounded-full mr-2 mb-2"
               resizeMode="cover"
             />
           ) : (
@@ -83,6 +89,11 @@ const CustomDrawerContent: React.FC<CustomDrawerContentProps> = (props) => {
                 Welcome {user.name}!
               </Text>
               <Text className="text-sm text-gray-600">{user.email}</Text>
+              {user.role && (
+                <Text className="text-xs text-gray-500 mt-1">
+                  Role: {user.role}
+                </Text>
+              )}
             </>
           ) : (
             <>
@@ -112,6 +123,18 @@ const CustomDrawerContent: React.FC<CustomDrawerContentProps> = (props) => {
             <Text className="text-lg text-gray-700">Login / Sign Up</Text>
           </TouchableOpacity>
         )}
+
+        {/* --- MODIFIED: My Posted Jobs link (now always visible) --- */}
+        {user && ( // Only show if a user is logged in at all
+          <TouchableOpacity
+            className="flex-row items-center px-5 py-3 border-b border-gray-100"
+            onPress={() => navigateTo("/my-posted-jobs")} // Navigate to the new screen
+          >
+            <Briefcase size={20} color="#6B7280" className="mr-4" />
+            <Text className="text-lg text-gray-700">My Posted Jobs</Text>
+          </TouchableOpacity>
+        )}
+        {/* --- END MODIFIED --- */}
 
         <TouchableOpacity
           className="flex-row items-center px-5 py-3 border-b border-gray-100"

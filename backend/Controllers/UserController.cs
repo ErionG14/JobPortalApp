@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Linq; // Needed for .FirstOrDefaultAsync()
 
 namespace backend.Controllers;
 
@@ -230,7 +231,7 @@ public class UserController : ControllerBase
         _logger.LogInformation("UpdateUser (Admin): User '{UserName}' (ID: {Id}) updated successfully by Admin.", user.UserName, id);
         return Ok(new { Message = $"User '{user.UserName}' updated successfully." });
     }
-
+    
    [HttpPut("UpdateMyProfile")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "User, Manager")]
     public async Task<IActionResult> UpdateMyProfile([FromBody] UserUpdateByUserDTO model)
@@ -310,7 +311,8 @@ public class UserController : ControllerBase
             user.Birthdate,
             user.Gender,
             user.PhoneNumber,
-            user.Image
+            user.Image,
+            user.Role
         });
     }
 
