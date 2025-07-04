@@ -17,8 +17,9 @@ import {
   Calendar,
   UserCircle,
   Building,
-  MoreVertical, // For the 3-dot menu
-  FileText, // For "No jobs" fallback
+  MoreVertical,
+  FileText,
+  Plus, // <--- Ensure Plus is imported
 } from "lucide-react-native";
 import { useAuth } from "../context/AuthContext";
 import { useRouter, useFocusEffect } from "expo-router";
@@ -43,8 +44,6 @@ interface ManagerPostedJob {
   managerName: string;
   managerSurname: string;
   managerImage: string | null;
-  // REMOVED: createdAt: string; // Removed as per your backend Job model/DTO
-  // REMOVED: updatedAt: string; // Removed as per your backend Job model/DTO
 }
 
 const MyPostedJobsScreen: React.FC = () => {
@@ -75,7 +74,6 @@ const MyPostedJobsScreen: React.FC = () => {
   };
 
   const fetchMyPostedJobs = useCallback(async () => {
-    // Add debug logs for user and token
     console.log("fetchMyPostedJobs: Current user:", user?.email);
     console.log("fetchMyPostedJobs: Current user role:", user?.role);
     console.log(
@@ -84,7 +82,6 @@ const MyPostedJobsScreen: React.FC = () => {
     );
 
     if (!user || !user.token || user.role !== "Manager") {
-      // Ensure user is logged in and is a Manager
       const authError =
         "You must be logged in as a Manager to view your posted jobs.";
       console.warn("Auth check failed for MyPostedJobsScreen:", authError);
@@ -122,7 +119,6 @@ const MyPostedJobsScreen: React.FC = () => {
               Object.values(errorData.errors).flat().join("\n")) ||
             errorMessage;
         } catch (e) {
-          // If response is not JSON, use the raw text
           errorMessage = `Server error: ${
             response.status
           }. Details: ${errorText.substring(0, 150)}...`;
@@ -170,7 +166,6 @@ const MyPostedJobsScreen: React.FC = () => {
     fetchMyPostedJobs();
   }, [fetchMyPostedJobs]);
 
-  // --- NEW: Handle Job Options (Edit/Delete) ---
   const handleJobOptions = (job: ManagerPostedJob) => {
     Alert.alert(
       "Job Options",
@@ -195,7 +190,6 @@ const MyPostedJobsScreen: React.FC = () => {
   };
 
   const handleEditJob = (job: ManagerPostedJob) => {
-    // Navigate to a new screen for editing the job
     Alert.alert("Edit Job", `Navigating to edit job with ID: ${job.id}`);
     router.push({
       pathname: "/edit-job", // This route needs to exist and be correctly configured
@@ -251,7 +245,6 @@ const MyPostedJobsScreen: React.FC = () => {
       ]
     );
   };
-  // --- END NEW: Handle Job Options ---
 
   if (loading && !refreshing) {
     return (
@@ -278,9 +271,6 @@ const MyPostedJobsScreen: React.FC = () => {
     );
   }
 
-  // Ensure user is a manager before showing "No jobs" or list
-  // This check is redundant if fetchMyPostedJobs already handles non-managers,
-  // but keeps the UI clear.
   if (user && user.role !== "Manager") {
     return (
       <View className="flex-1 justify-center items-center bg-gray-50 p-4">
@@ -298,11 +288,8 @@ const MyPostedJobsScreen: React.FC = () => {
         <Text className="mt-4 text-gray-600 text-lg text-center">
           You haven&#39;t posted any jobs yet.
         </Text>
-        {/* Optional: Button to create a new job */}
         <TouchableOpacity
-          onPress={() =>
-            Alert.alert("Create Job", "Navigate to Create Job screen")
-          }
+          onPress={() => router.push("/create-job")}
           className="bg-blue-500 py-3 px-6 rounded-lg mt-4"
         >
           <Text className="text-white text-base font-semibold">
@@ -321,9 +308,17 @@ const MyPostedJobsScreen: React.FC = () => {
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }
     >
-      <Text className="text-2xl font-bold text-gray-800 text-center my-4">
-        My Posted Jobs
-      </Text>
+      {/* --- MODIFIED: "My Posted Jobs" Text title with Plus icon --- */}
+      <View className="flex-row items-center justify-between my-4 px-4">
+        <Text className="text-2xl font-bold text-gray-800">My Posted Jobs</Text>
+        <TouchableOpacity
+          onPress={() => router.push("/create-job")}
+          className="p-2 rounded-full bg-blue-500 shadow-md"
+        >
+          <Plus size={24} color="white" />
+        </TouchableOpacity>
+      </View>
+      {/* --- END MODIFIED --- */}
       {myJobs.map((job) => (
         <View
           key={job.id}
@@ -353,7 +348,6 @@ const MyPostedJobsScreen: React.FC = () => {
             <Text className="text-xs text-gray-500 mr-2">
               Posted {getTimeAgo(job.postedDate)}
             </Text>
-            {/* 3-dot icon for job options */}
             <TouchableOpacity
               onPress={() => handleJobOptions(job)}
               className="p-1"
