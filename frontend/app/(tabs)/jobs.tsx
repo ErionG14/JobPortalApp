@@ -1,5 +1,5 @@
 // frontend/app/(tabs)/jobs.tsx
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import {
   View,
   Text,
@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   Alert,
   RefreshControl,
+  TextInput,
 } from "react-native";
 import {
   Briefcase,
@@ -17,6 +18,8 @@ import {
   Calendar,
   UserCircle,
   Building,
+  Search,
+  XCircle,
 } from "lucide-react-native";
 import { useAuth } from "../../context/AuthContext";
 import { useRouter } from "expo-router";
@@ -37,8 +40,8 @@ interface JobListing {
   applicationDeadline: string;
   managerId: string;
   managerUserName: string;
-  managerName: string;
-  managerSurname: string;
+  managerFirstName: string;
+  managerLastName: string;
   managerImage: string | null;
 }
 
@@ -49,6 +52,7 @@ const JobsScreen: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [searchQuery, setSearchQuery] = useState<string>("");
 
   const getTimeAgo = (dateString: string) => {
     const postDate = new Date(dateString);
@@ -177,6 +181,25 @@ const JobsScreen: React.FC = () => {
     [user, router]
   );
 
+  // --- Filter Logic ---
+  const filteredJobs = useMemo(() => {
+    if (!searchQuery) {
+      return jobs;
+    }
+    const lowerCaseQuery = searchQuery.toLowerCase();
+    return jobs.filter(
+      (job) =>
+        job.title.toLowerCase().includes(lowerCaseQuery) ||
+        job.description.toLowerCase().includes(lowerCaseQuery) ||
+        job.companyName.toLowerCase().includes(lowerCaseQuery) ||
+        job.location.toLowerCase().includes(lowerCaseQuery) ||
+        job.employmentType.toLowerCase().includes(lowerCaseQuery) ||
+        job.managerFirstName.toLowerCase().includes(lowerCaseQuery) ||
+        job.managerLastName.toLowerCase().includes(lowerCaseQuery) ||
+        job.managerUserName.toLowerCase().includes(lowerCaseQuery)
+    );
+  }, [jobs, searchQuery]);
+
   if (loading && !refreshing) {
     return (
       <View className="flex-1 justify-center items-center bg-gray-50">
@@ -202,17 +225,6 @@ const JobsScreen: React.FC = () => {
     );
   }
 
-  if (jobs.length === 0) {
-    return (
-      <View className="flex-1 justify-center items-center bg-gray-50">
-        <Briefcase size={48} color="#9CA3AF" />
-        <Text className="mt-4 text-gray-600 text-lg">
-          No job listings available yet.
-        </Text>
-      </View>
-    );
-  }
-
   return (
     <ScrollView
       className="flex-1 bg-gray-50"
@@ -221,115 +233,173 @@ const JobsScreen: React.FC = () => {
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }
     >
-      {jobs.map((job) => (
-        <View
-          key={job.id}
-          className="bg-white rounded-lg p-4 mb-3 shadow-sm border border-gray-200"
-        >
-          {/* Job Header: Manager Info */}
-          <View className="flex-row items-center mb-3">
-            {job.managerImage ? (
-              <Image
-                source={{ uri: job.managerImage }}
-                className="w-10 h-10 rounded-full mr-2"
-                resizeMode="cover"
+      {/* Search Bar */}
+      <View className="flex-row items-center bg-white rounded-lg px-4 py-2 mt-2 mb-4 shadow-sm border border-gray-200">
+        <Search size={20} color="#6B7280" style={{ marginRight: 10 }} />{" "}
+        {/* Added explicit marginRight */}
+        <TextInput
+          className="flex-1 text-base text-gray-800"
+          placeholder="Search jobs (title, company, location, manager...)"
+          placeholderTextColor="#9CA3AF"
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          clearButtonMode="while-editing"
+          autoCapitalize="none"
+        />
+        {searchQuery.length > 0 && (
+          <TouchableOpacity
+            onPress={() => setSearchQuery("")}
+            className="ml-2 p-1"
+          >
+            <XCircle size={20} color="#6B7280" />
+          </TouchableOpacity>
+        )}
+      </View>
+
+      {filteredJobs.length === 0 && !loading && !error ? (
+        <View className="flex-1 justify-center items-center mt-10">
+          <Briefcase size={48} color="#9CA3AF" />
+          <Text className="mt-4 text-gray-600 text-lg text-center">
+            No jobs found matching your search criteria.
+          </Text>
+        </View>
+      ) : (
+        filteredJobs.map((job) => (
+          <View
+            key={job.id}
+            className="bg-white rounded-lg p-4 mb-3 shadow-sm border border-gray-200"
+          >
+            {/* Job Header: Manager Info */}
+            <View className="flex-row items-center mb-3">
+              {job.managerImage ? (
+                <Image
+                  source={{ uri: job.managerImage }}
+                  className="w-10 h-10 rounded-full mr-2"
+                  resizeMode="cover"
+                />
+              ) : (
+                <View className="w-10 h-10 rounded-full bg-gray-200 mr-2 flex justify-center items-center">
+                  <UserCircle size={28} color="#6B7280" />
+                </View>
+              )}
+              <View className="flex-1">
+                <Text className="text-base font-bold text-gray-800">
+                  {job.managerFirstName} {job.managerLastName}
+                </Text>
+                <Text className="text-sm text-gray-600">
+                  @{job.managerUserName || "Manager"}
+                </Text>
+              </View>
+              <Text className="text-xs text-gray-500">
+                Posted {getTimeAgo(job.postedDate)}
+              </Text>
+            </View>
+
+            {/* Job Details */}
+            <Text className="text-xl font-bold text-gray-900 mb-2">
+              {job.title}
+            </Text>
+            <Text className="text-base text-gray-700 mb-4">
+              {job.description}
+            </Text>
+
+            <View className="flex-row items-center mb-2">
+              {/* --- MODIFIED: Added explicit style for marginRight --- */}
+              <Building size={18} color="#6B7280" style={{ marginRight: 5 }} />
+              <Text className="text-sm text-gray-600">{job.companyName}</Text>
+            </View>
+
+            <View className="flex-row items-center mb-2">
+              {/* --- MODIFIED: Added explicit style for marginRight --- */}
+              <MapPin size={18} color="#6B7280" style={{ marginRight: 5 }} />
+              <Text className="text-sm text-gray-600">{job.location}</Text>
+            </View>
+
+            <View className="flex-row items-center mb-2">
+              {/* --- MODIFIED: Added explicit style for marginRight --- */}
+              <Briefcase
+                size={18}
+                color="#6B7280"
+                style={{ marginRight: 5 }}
               />
-            ) : (
-              <View className="w-10 h-10 rounded-full bg-gray-200 mr-2 flex justify-center items-center">
-                <UserCircle size={28} color="#6B7280" />
+              <Text className="text-sm text-gray-600">
+                {job.employmentType}
+              </Text>
+            </View>
+
+            {job.salaryMin !== null && job.salaryMax !== null && (
+              <View className="flex-row items-center mb-2">
+                {/* --- MODIFIED: Added explicit style for marginRight --- */}
+                <DollarSign
+                  size={18}
+                  color="#6B7280"
+                  style={{ marginRight: 5 }}
+                />
+                <Text className="text-sm text-gray-600">
+                  ${job.salaryMin.toLocaleString()} - $
+                  {job.salaryMax.toLocaleString()}
+                </Text>
               </View>
             )}
-            <View className="flex-1">
-              <Text className="text-base font-bold text-gray-800">
-                {job.managerName} {job.managerSurname}
-              </Text>
+            {job.salaryMin !== null && job.salaryMax === null && (
+              <View className="flex-row items-center mb-2">
+                {/* --- MODIFIED: Added explicit style for marginRight --- */}
+                <DollarSign
+                  size={18}
+                  color="#6B7280"
+                  style={{ marginRight: 10 }}
+                />
+                <Text className="text-sm text-gray-600">
+                  From ${job.salaryMin.toLocaleString()}
+                </Text>
+              </View>
+            )}
+            {job.salaryMax !== null && job.salaryMin === null && (
+              <View className="flex-row items-center mb-2">
+                {/* --- MODIFIED: Added explicit style for marginRight --- */}
+                <DollarSign
+                  size={18}
+                  color="#6B7280"
+                  style={{ marginRight: 10 }}
+                />
+                <Text className="text-sm text-gray-600">
+                  Up to ${job.salaryMax.toLocaleString()}
+                </Text>
+              </View>
+            )}
+
+            <View className="flex-row items-center mt-2 border-t border-gray-100 pt-3">
+              {/* --- MODIFIED: Added explicit style for marginRight --- */}
+              <Calendar size={18} color="#6B7280" style={{ marginRight: 5 }} />
               <Text className="text-sm text-gray-600">
-                @{job.managerUserName || "Manager"}
+                Apply by:{" "}
+                {new Date(job.applicationDeadline).toLocaleDateString()}
               </Text>
             </View>
-            <Text className="text-xs text-gray-500">
-              Posted {getTimeAgo(job.postedDate)}
-            </Text>
+
+            {user && user.role === "User" && user.id !== job.managerId ? (
+              <TouchableOpacity
+                onPress={() => handleNavigateToApply(job.id, job.title)}
+                className="bg-blue-600 py-3 rounded-lg mt-4 shadow-md"
+              >
+                <Text className="text-white text-center text-base font-semibold">
+                  Apply Now
+                </Text>
+              </TouchableOpacity>
+            ) : (
+              <View className="bg-gray-300 py-3 rounded-lg mt-4">
+                <Text className="text-gray-600 text-center text-base font-semibold">
+                  {user && user.role !== "User"
+                    ? "Managers/Admins cannot apply"
+                    : user && user.id === job.managerId
+                    ? "You posted this job"
+                    : "Login to Apply"}
+                </Text>
+              </View>
+            )}
           </View>
-
-          {/* Job Details */}
-          <Text className="text-xl font-bold text-gray-900 mb-2">
-            {job.title}
-          </Text>
-          <Text className="text-base text-gray-700 mb-3">
-            {job.description}
-          </Text>
-
-          <View className="flex-row items-center mb-2">
-            <Building size={18} color="#6B7280" className="mr-2" />
-            <Text className="text-sm text-gray-600">{job.companyName}</Text>
-          </View>
-
-          <View className="flex-row items-center mb-2">
-            <MapPin size={18} color="#6B7280" className="mr-2" />
-            <Text className="text-sm text-gray-600">{job.location}</Text>
-          </View>
-
-          <View className="flex-row items-center mb-2">
-            <Briefcase size={18} color="#6B7280" className="mr-2" />
-            <Text className="text-sm text-gray-600">{job.employmentType}</Text>
-          </View>
-
-          {job.salaryMin !== null && job.salaryMax !== null && (
-            <View className="flex-row items-center mb-2">
-              <DollarSign size={18} color="#6B7280" className="mr-2" />
-              <Text className="text-sm text-gray-600">
-                ${job.salaryMin.toLocaleString()} - $
-                {job.salaryMax.toLocaleString()}
-              </Text>
-            </View>
-          )}
-          {job.salaryMin !== null && job.salaryMax === null && (
-            <View className="flex-row items-center mb-2">
-              <DollarSign size={18} color="#6B7280" className="mr-2" />
-              <Text className="text-sm text-gray-600">
-                From ${job.salaryMin.toLocaleString()}
-              </Text>
-            </View>
-          )}
-          {job.salaryMax !== null && job.salaryMin === null && (
-            <View className="flex-row items-center mb-2">
-              <DollarSign size={18} color="#6B7280" className="mr-2" />
-              <Text className="text-sm text-gray-600">
-                Up to ${job.salaryMax.toLocaleString()}
-              </Text>
-            </View>
-          )}
-
-          <View className="flex-row items-center mt-2 border-t border-gray-100 pt-3">
-            <Calendar size={18} color="#6B7280" className="mr-2" />
-            <Text className="text-sm text-gray-600">
-              Apply by: {new Date(job.applicationDeadline).toLocaleDateString()}
-            </Text>
-          </View>
-
-          {user && user.role === "User" && user.id !== job.managerId ? (
-            <TouchableOpacity
-              onPress={() => handleNavigateToApply(job.id, job.title)}
-              className="bg-blue-600 py-3 rounded-lg mt-4 shadow-md"
-            >
-              <Text className="text-white text-center text-base font-semibold">
-                Apply Now
-              </Text>
-            </TouchableOpacity>
-          ) : (
-            <View className="bg-gray-300 py-3 rounded-lg mt-4">
-              <Text className="text-gray-600 text-center text-base font-semibold">
-                {user && user.role !== "User"
-                  ? "Managers/Admins cannot apply"
-                  : user && user.id === job.managerId
-                  ? "You posted this job"
-                  : "Login to Apply"}
-              </Text>
-            </View>
-          )}
-        </View>
-      ))}
+        ))
+      )}
     </ScrollView>
   );
 };

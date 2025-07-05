@@ -68,7 +68,7 @@ namespace backend.DBContext
                 .HasOne(j => j.User) // A Job has one User (Manager)
                 .WithMany(u => u.Jobs) // A User (Manager) can post many Jobs
                 .HasForeignKey(j => j.UserId) // The foreign key is UserId in the Job model
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Cascade);
             
             modelBuilder.Entity<JobApplication>()
                 .HasOne(ja => ja.Job) // A JobApplication belongs to one Job
@@ -80,7 +80,7 @@ namespace backend.DBContext
                 .HasOne(ja => ja.User) // A JobApplication belongs to one User (Applicant)
                 .WithMany(u => u.JobApplications) // A User can have many JobApplications
                 .HasForeignKey(ja => ja.UserId)
-                .OnDelete(DeleteBehavior.Restrict); // Prevent deleting a User if they have job applications
+                .OnDelete(DeleteBehavior.Cascade); // Prevent deleting a User if they have job applications
 
             // Add unique constraint to prevent a user from applying to the same job multiple times
             modelBuilder.Entity<JobApplication>()

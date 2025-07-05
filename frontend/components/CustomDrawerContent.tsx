@@ -4,7 +4,7 @@ import {
   View,
   Text,
   TouchableOpacity,
-  Linking, // Not used in this snippet, but kept if you use it elsewhere
+  Linking,
   Alert,
   ActivityIndicator,
   Image,
@@ -23,7 +23,7 @@ import {
   Home,
   LogOut,
   Briefcase,
-  Users, // <--- NEW: Import Users icon for Admin Dashboard
+  Users,
 } from "lucide-react-native";
 
 import { useAuth } from "../context/AuthContext";
@@ -109,7 +109,8 @@ const CustomDrawerContent: React.FC<CustomDrawerContentProps> = (props) => {
           className="flex-row items-center px-5 py-3 border-b border-gray-100"
           onPress={() => navigateTo("/")}
         >
-          <Home size={20} color="#6B7280" className="mr-4" />
+          {/* --- MODIFIED: Added explicit style for marginRight --- */}
+          <Home size={20} color="#6B7280" style={{ marginRight: 16 }} />
           <Text className="text-lg text-gray-700">Home</Text>
         </TouchableOpacity>
 
@@ -118,7 +119,8 @@ const CustomDrawerContent: React.FC<CustomDrawerContentProps> = (props) => {
             className="flex-row items-center px-5 py-3 border-b border-gray-100"
             onPress={() => navigateTo("/login")}
           >
-            <LogIn size={20} color="#6B7280" className="mr-4" />
+            {/* --- MODIFIED: Added explicit style for marginRight --- */}
+            <LogIn size={20} color="#6B7280" style={{ marginRight: 16 }} />
             <Text className="text-lg text-gray-700">Login / Sign Up</Text>
           </TouchableOpacity>
         )}
@@ -128,29 +130,30 @@ const CustomDrawerContent: React.FC<CustomDrawerContentProps> = (props) => {
             className="flex-row items-center px-5 py-3 border-b border-gray-100"
             onPress={() => navigateTo("/my-posted-jobs")}
           >
-            <Briefcase size={20} color="#6B7280" className="mr-4" />
+            {/* --- MODIFIED: Added explicit style for marginRight --- */}
+            <Briefcase size={20} color="#6B7280" style={{ marginRight: 16 }} />
             <Text className="text-lg text-gray-700">My Posted Jobs</Text>
           </TouchableOpacity>
         )}
 
-        {/* --- NEW: Admin Dashboard Button (Conditional) --- */}
+        {/* Admin Dashboard Button (Conditional) */}
         {user && user.role === "Admin" && (
           <TouchableOpacity
             className="flex-row items-center px-5 py-3 border-b border-gray-100"
-            onPress={() => navigateTo("/admin/dashboard")} // Navigate to the new dashboard screen
+            onPress={() => navigateTo("/admin/dashboard")}
           >
-            <Users size={20} color="#6B7280" className="mr-4" />{" "}
-            {/* Users icon */}
+            {/* --- MODIFIED: Added explicit style for marginRight --- */}
+            <Users size={20} color="#6B7280" style={{ marginRight: 16 }} />
             <Text className="text-lg text-gray-700">Admin Dashboard</Text>
           </TouchableOpacity>
         )}
-        {/* --- END NEW --- */}
 
         <TouchableOpacity
           className="flex-row items-center px-5 py-3 border-b border-gray-100"
           onPress={() => Alert.alert("Settings", "Navigate to settings screen")}
         >
-          <Settings size={20} color="#6B7280" className="mr-4" />
+          {/* --- MODIFIED: Added explicit style for marginRight --- */}
+          <Settings size={20} color="#6B7280" style={{ marginRight: 16 }} />
           <Text className="text-lg text-gray-700">Settings</Text>
         </TouchableOpacity>
 
@@ -158,7 +161,8 @@ const CustomDrawerContent: React.FC<CustomDrawerContentProps> = (props) => {
           className="flex-row items-center px-5 py-3 border-b border-gray-100"
           onPress={() => Alert.alert("About", "This is the Job Portal App.")}
         >
-          <Info size={20} color="#6B7280" className="mr-4" />
+          {/* --- MODIFIED: Added explicit style for marginRight --- */}
+          <Info size={20} color="#6B7280" style={{ marginRight: 16 }} />
           <Text className="text-lg text-gray-700">About</Text>
         </TouchableOpacity>
 
@@ -167,7 +171,8 @@ const CustomDrawerContent: React.FC<CustomDrawerContentProps> = (props) => {
             className="flex-row items-center px-5 py-3 border-b border-gray-100 mt-4 bg-red-50"
             onPress={handleLogout}
           >
-            <LogOut size={20} color="#EF4444" className="mr-4" />
+            {/* --- MODIFIED: Added explicit style for marginRight --- */}
+            <LogOut size={20} color="#EF4444" style={{ marginRight: 16 }} />
             <Text className="text-lg text-red-600 font-semibold">Log Out</Text>
           </TouchableOpacity>
         )}

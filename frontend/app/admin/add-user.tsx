@@ -1,4 +1,4 @@
-// frontend/app/admin/edit-user.tsx
+// frontend/app/admin/add-user.tsx
 import React, { useState, useEffect } from "react";
 import {
   View,
@@ -9,20 +9,18 @@ import {
   ActivityIndicator,
   Alert,
   Platform,
-  Image,
-  StyleSheet,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useRouter, useLocalSearchParams } from "expo-router";
+import { useRouter } from "expo-router";
 import { useAuth } from "../../context/AuthContext";
 import {
-  UserCircle,
+  User,
   Mail,
   Phone,
   MapPin,
   Cake,
-  User,
   Shield,
+  Lock,
   Save,
   ArrowLeft,
 } from "lucide-react-native";
@@ -32,23 +30,10 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 // --- IMPORTANT: CONFIGURE YOUR BACKEND API BASE URL HERE ---
 const API_BASE_URL = "http://192.168.178.34:5130";
 
-interface UserData {
-  id: string;
-  email: string;
-  userName: string;
-  name: string | null;
-  surname: string | null;
-  address: string | null;
-  birthdate: string | null;
-  gender: string | null;
-  phoneNumber: string | null;
-  image: string | null;
-  role: string;
-}
-
-interface UserUpdateDto {
+interface AddUserByAdminDto {
   username: string;
   email: string;
+  password: string;
   name: string | null;
   surname: string | null;
   address: string | null;
@@ -59,29 +44,29 @@ interface UserUpdateDto {
 }
 
 const ALL_ROLES = ["User", "Manager", "Admin"];
-const ALL_GENDERS = ["Male", "Female"];
+const ALL_GENDERS = ["Male", "Female", "Other", "Prefer Not To Say"];
 
-const AdminEditUserScreen: React.FC = () => {
+const AdminAddUserScreen: React.FC = () => {
   const { user: currentUser, signOut } = useAuth();
   const router = useRouter();
-  const { user: userParam } = useLocalSearchParams();
 
-  const [initialUserData, setInitialUserData] = useState<UserData | null>(null);
-  const [formData, setFormData] = useState<UserUpdateDto>({
+  const [formData, setFormData] = useState<AddUserByAdminDto>({
     username: "",
     email: "",
+    password: "",
     name: "",
     surname: "",
     address: "",
     birthdate: "",
     gender: "",
     phoneNumber: "",
-    role: "",
+    role: "User",
   });
   const [submitting, setSubmitting] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
 
+  // --- Role-Based Access Control ---
   useEffect(() => {
     if (!currentUser) {
       Alert.alert(
@@ -92,75 +77,61 @@ const AdminEditUserScreen: React.FC = () => {
       return;
     }
     if (currentUser.role !== "Admin") {
-      Alert.alert(
-        "Access Denied",
-        "You do not have permission to view this page."
-      );
+      Alert.alert("Access Denied", "You do not have permission to add users.");
       router.replace("/");
       return;
     }
-
-    // Parse user data passed via navigation
-    if (userParam) {
-      try {
-        const parsedUser: UserData = JSON.parse(userParam as string);
-        setInitialUserData(parsedUser);
-        setFormData({
-          username: parsedUser.userName || "",
-          email: parsedUser.email || "",
-          name: parsedUser.name || "",
-          surname: parsedUser.surname || "",
-          address: parsedUser.address || "",
-          birthdate: parsedUser.birthdate
-            ? new Date(parsedUser.birthdate).toISOString().split("T")[0]
-            : "", // Format to YYYY-MM-DD
-          gender: parsedUser.gender || "",
-          phoneNumber: parsedUser.phoneNumber || "",
-          role: parsedUser.role || "",
-        });
-      } catch (e) {
-        console.error("Failed to parse user data from params:", e);
-        setLoadError("Invalid user data provided. Please go back.");
-      }
-    } else {
-      setLoadError("No user data provided for editing.");
-    }
-  }, [userParam, currentUser, router, signOut]);
+  }, [currentUser, router, signOut]);
 
   // Handle form field changes
-  const handleChange = (name: keyof UserUpdateDto, value: string) => {
+  const handleChange = (name: keyof AddUserByAdminDto, value: string) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   // Handle date change from DatePicker
   const onDateChange = (event: any, selectedDate?: Date) => {
-    setShowDatePicker(Platform.OS === "ios"); // Hide picker for Android on selection, keep open for iOS
+    setShowDatePicker(Platform.OS === "ios");
     if (selectedDate) {
       setFormData((prev) => ({
         ...prev,
-        birthdate: selectedDate.toISOString().split("T")[0], // Format to YYYY-MM-DD
+        birthdate: selectedDate.toISOString().split("T")[0],
       }));
     }
   };
 
-  // --- Handle User Update Submission ---
+  // --- Handle User Add Submission ---
   const handleSubmit = async () => {
     if (loadError) {
       Alert.alert("Error", loadError);
       return;
     }
 
-    if (!initialUserData || !currentUser || !currentUser.token) {
-      Alert.alert("Error", "Missing user data or authentication token.");
+    if (!currentUser || !currentUser.token) {
+      Alert.alert("Error", "Authentication token missing.");
       return;
     }
 
-    // Basic validation
-    if (!formData.username || !formData.email || !formData.role) {
+    if (
+      !formData.username ||
+      !formData.email ||
+      !formData.password ||
+      !formData.role
+    ) {
       Alert.alert(
         "Validation Error",
-        "Username, Email, and Role are required."
+        "Username, Email, Password, and Role are required."
       );
+      return;
+    }
+    if (formData.password.length < 6) {
+      Alert.alert(
+        "Validation Error",
+        "Password must be at least 6 characters long."
+      );
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      Alert.alert("Validation Error", "Please enter a valid email address.");
       return;
     }
 
@@ -186,26 +157,23 @@ const AdminEditUserScreen: React.FC = () => {
 
     setSubmitting(true);
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/api/User/UpdateUser${initialUserData.id}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${currentUser.token}`,
-          },
-          body: JSON.stringify(formData),
-        }
-      );
+      const response = await fetch(`${API_BASE_URL}/api/User/AddUser`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${currentUser.token}`,
+        },
+        body: JSON.stringify(formData),
+      });
 
       if (!response.ok) {
         const errorText = await response.text();
         console.error(
-          "API Response not OK for UpdateUser:",
+          "API Response not OK for AddUser:",
           response.status,
           errorText
         );
-        let errorMessage = "Failed to update user.";
+        let errorMessage = "Failed to add user.";
         try {
           const errorData = JSON.parse(errorText);
           errorMessage =
@@ -225,14 +193,14 @@ const AdminEditUserScreen: React.FC = () => {
       const result = await response.json();
       Alert.alert(
         "Success",
-        result.Message || `User '${formData.username}' updated successfully!`
+        result.Message || `User '${formData.username}' added successfully!`
       );
       router.back();
     } catch (err: any) {
-      console.error("Error updating user:", err);
+      console.error("Error adding user:", err);
       Alert.alert(
-        "Update Failed",
-        err.message || "An unexpected error occurred during update."
+        "Add User Failed",
+        err.message || "An unexpected error occurred during user creation."
       );
       if (
         err.message.includes("Unauthorized") ||
@@ -251,17 +219,6 @@ const AdminEditUserScreen: React.FC = () => {
   };
 
   // --- Render Loading/Error/Access Denied States ---
-  if (!initialUserData && !loadError) {
-    return (
-      <SafeAreaView className="flex-1 justify-center items-center bg-gray-50">
-        <ActivityIndicator size="large" color="#2563EB" />
-        <Text className="mt-4 text-gray-600">
-          Loading user data for editing...
-        </Text>
-      </SafeAreaView>
-    );
-  }
-
   if (loadError) {
     return (
       <SafeAreaView className="flex-1 justify-center items-center bg-gray-50 p-4">
@@ -280,16 +237,9 @@ const AdminEditUserScreen: React.FC = () => {
 
   if (!currentUser || currentUser.role !== "Admin") {
     return (
-      <SafeAreaView className="flex-1 justify-center items-center bg-gray-50 p-4">
-        <Text className="text-red-600 text-lg text-center mb-4">
-          Access Denied. You must be an Admin to edit users.
-        </Text>
-        <TouchableOpacity
-          onPress={() => router.replace("/")}
-          className="bg-blue-500 py-3 px-6 rounded-lg"
-        >
-          <Text className="text-white text-base font-semibold">Go Home</Text>
-        </TouchableOpacity>
+      <SafeAreaView className="flex-1 justify-center items-center bg-gray-50">
+        <ActivityIndicator size="large" color="#2563EB" />
+        <Text className="mt-4 text-gray-600">Checking permissions...</Text>
       </SafeAreaView>
     );
   }
@@ -300,48 +250,14 @@ const AdminEditUserScreen: React.FC = () => {
         <TouchableOpacity onPress={() => router.back()} className="p-2">
           <ArrowLeft size={24} color="#333" />
         </TouchableOpacity>
-        <Text className="text-xl font-bold text-gray-800">Edit User</Text>
-        <View className="w-8" />
+        <Text className="text-xl font-bold text-gray-800">Add New User</Text>
+        <View className="w-8" /> {/* Spacer */}
       </View>
 
       <ScrollView contentContainerStyle={{ padding: 16 }}>
         <Text className="text-3xl font-bold text-gray-800 text-center mb-6">
-          Edit User Profile
+          Create New User Account
         </Text>
-        <Text className="text-lg text-gray-600 text-center mb-6">
-          Editing: {initialUserData?.userName} (ID: {initialUserData?.id})
-        </Text>
-
-        {initialUserData?.image && (
-          <View className="items-center mb-6">
-            <Image
-              source={{ uri: initialUserData.image }}
-              className="w-24 h-24 rounded-full border-2 border-blue-400"
-              resizeMode="cover"
-              onError={(e) =>
-                console.log(
-                  "Image Load Error:",
-                  e.nativeEvent.error,
-                  "URL:",
-                  initialUserData.image
-                )
-              }
-            />
-            <Text className="text-sm text-gray-500 mt-2">
-              Current Profile Picture
-            </Text>
-          </View>
-        )}
-        {!initialUserData?.image && (
-          <View className="items-center mb-6">
-            <View className="w-24 h-24 rounded-full bg-gray-200 flex justify-center items-center border-2 border-blue-400">
-              <UserCircle size={60} color="#6B7280" />
-            </View>
-            <Text className="text-sm text-gray-500 mt-2">
-              No Profile Picture
-            </Text>
-          </View>
-        )}
 
         {/* Form Fields */}
         <View className="mb-4">
@@ -375,7 +291,26 @@ const AdminEditUserScreen: React.FC = () => {
         </View>
 
         <View className="mb-4">
-          <Text className="text-base text-gray-700 mb-1">First Name</Text>
+          <Text className="text-base text-gray-700 mb-1">Password</Text>
+          <View className="border border-gray-300 rounded-lg px-3 py-2 bg-white flex-row items-center">
+            <Lock size={20} color="#6B7280" className="mr-2" />
+            <TextInput
+              className="flex-1 text-base text-gray-800"
+              placeholder="Password"
+              value={formData.password}
+              onChangeText={(text) => handleChange("password", text)}
+              secureTextEntry
+            />
+          </View>
+          <Text className="text-xs text-gray-500 mt-1">
+            Minimum 6 characters.
+          </Text>
+        </View>
+
+        <View className="mb-4">
+          <Text className="text-base text-gray-700 mb-1">
+            First Name (Optional)
+          </Text>
           <View className="border border-gray-300 rounded-lg px-3 py-2 bg-white flex-row items-center">
             <User size={20} color="#6B7280" className="mr-2" />
             <TextInput
@@ -388,7 +323,9 @@ const AdminEditUserScreen: React.FC = () => {
         </View>
 
         <View className="mb-4">
-          <Text className="text-base text-gray-700 mb-1">Last Name</Text>
+          <Text className="text-base text-gray-700 mb-1">
+            Last Name (Optional)
+          </Text>
           <View className="border border-gray-300 rounded-lg px-3 py-2 bg-white flex-row items-center">
             <User size={20} color="#6B7280" className="mr-2" />
             <TextInput
@@ -401,7 +338,9 @@ const AdminEditUserScreen: React.FC = () => {
         </View>
 
         <View className="mb-4">
-          <Text className="text-base text-gray-700 mb-1">Address</Text>
+          <Text className="text-base text-gray-700 mb-1">
+            Address (Optional)
+          </Text>
           <View className="border border-gray-300 rounded-lg px-3 py-2 bg-white flex-row items-center">
             <MapPin size={20} color="#6B7280" className="mr-2" />
             <TextInput
@@ -415,7 +354,9 @@ const AdminEditUserScreen: React.FC = () => {
 
         {/* --- Birthdate (Calendar Picker) --- */}
         <View className="mb-4">
-          <Text className="text-base text-gray-700 mb-1">Birthdate</Text>
+          <Text className="text-base text-gray-700 mb-1">
+            Birthdate (Optional)
+          </Text>
           <TouchableOpacity
             onPress={() => setShowDatePicker(true)}
             className="border border-gray-300 rounded-lg px-3 py-2 bg-white flex-row items-center"
@@ -425,7 +366,7 @@ const AdminEditUserScreen: React.FC = () => {
               className="flex-1 text-base text-gray-800"
               placeholder="Select Birthdate"
               value={formData.birthdate || ""}
-              editable={false} // Make it not editable directly
+              editable={false}
             />
           </TouchableOpacity>
           {showDatePicker && (
@@ -443,11 +384,13 @@ const AdminEditUserScreen: React.FC = () => {
 
         {/* --- Gender (Dropdown Picker) --- */}
         <View className="mb-4">
-          <Text className="text-base text-gray-700 mb-1">Gender</Text>
+          <Text className="text-base text-gray-700 mb-1">
+            Gender (Optional)
+          </Text>
           <View className="border border-gray-300 rounded-lg bg-white flex-row items-center pr-3">
             <User size={20} color="#6B7280" className="ml-3 mr-2" />
             <Picker
-              selectedValue={formData.gender || ""}
+              selectedValue={formData.gender ?? undefined}
               onValueChange={(itemValue: string) =>
                 handleChange("gender", itemValue)
               }
@@ -457,7 +400,6 @@ const AdminEditUserScreen: React.FC = () => {
               <Picker.Item
                 label="Select Gender"
                 value=""
-                enabled={false}
                 style={{ color: "#9CA3AF" }}
               />
               {ALL_GENDERS.map((gender) => (
@@ -465,20 +407,9 @@ const AdminEditUserScreen: React.FC = () => {
               ))}
             </Picker>
           </View>
-        </View>
-
-        <View className="mb-4">
-          <Text className="text-base text-gray-700 mb-1">Phone Number</Text>
-          <View className="border border-gray-300 rounded-lg px-3 py-2 bg-white flex-row items-center">
-            <Phone size={20} color="#6B7280" className="mr-2" />
-            <TextInput
-              className="flex-1 text-base text-gray-800"
-              placeholder="Phone Number"
-              value={formData.phoneNumber || ""}
-              onChangeText={(text) => handleChange("phoneNumber", text)}
-              keyboardType="phone-pad"
-            />
-          </View>
+          <Text className="text-xs text-gray-500 mt-1">
+            Accepted: {ALL_GENDERS.join(", ")} (case-sensitive)
+          </Text>
         </View>
 
         {/* --- Role (Dropdown Picker) --- */}
@@ -505,6 +436,9 @@ const AdminEditUserScreen: React.FC = () => {
               ))}
             </Picker>
           </View>
+          <Text className="text-xs text-gray-500 mt-1">
+            Accepted: {ALL_ROLES.join(", ")} (case-sensitive)
+          </Text>
         </View>
 
         {/* Submit Button */}
@@ -518,9 +452,7 @@ const AdminEditUserScreen: React.FC = () => {
           ) : (
             <>
               <Save size={20} color="#fff" className="mr-2" />
-              <Text className="text-white text-lg font-semibold">
-                Save Changes
-              </Text>
+              <Text className="text-white text-lg font-semibold">Add User</Text>
             </>
           )}
         </TouchableOpacity>
@@ -529,4 +461,4 @@ const AdminEditUserScreen: React.FC = () => {
   );
 };
 
-export default AdminEditUserScreen;
+export default AdminAddUserScreen;
