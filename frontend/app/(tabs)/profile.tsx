@@ -170,6 +170,7 @@ const ProfileScreen: React.FC = () => {
       fetchProfile();
       fetchMyPosts();
       return () => {
+        // Cleanup if necessary
       };
     }, [fetchProfile, fetchMyPosts])
   );
@@ -325,13 +326,19 @@ const ProfileScreen: React.FC = () => {
         <View className="flex-row items-center mb-6 pt-4 mt-2">
           {/* Profile Picture or Placeholder */}
           {profile.image ? (
+            // --- MODIFIED: Removed mr-4, added style for explicit margin ---
             <Image
               source={{ uri: profile.image }}
-              className="w-20 h-20 rounded-full mr-4"
+              className="w-20 h-20 rounded-full"
+              style={{ marginRight: 16 }} // Explicit margin-right
               resizeMode="cover"
             />
           ) : (
-            <View className="w-20 h-20 rounded-full bg-gray-200 justify-center items-center mr-4">
+            // --- MODIFIED: Removed mr-4, added style for explicit margin ---
+            <View
+              className="w-20 h-20 rounded-full bg-gray-200 justify-center items-center"
+              style={{ marginRight: 16 }} // Explicit margin-right
+            >
               <UserCircle size={50} color="#6B7280" />
             </View>
           )}
@@ -360,14 +367,14 @@ const ProfileScreen: React.FC = () => {
 
           {profile.email && (
             <View className="flex-row items-center my-2 mb-2">
-              <Mail size={20} color="#6B7280" className="mr-3" />
+              <Mail size={20} color="#6B7280" style={{ marginRight: 5 }} />
               <Text className="text-base text-gray-700">{profile.email}</Text>
             </View>
           )}
 
           {profile.phoneNumber && (
             <View className="flex-row items-center my-2 mb-2">
-              <Phone size={20} color="#6B7280" className="mr-3" />
+              <Phone size={20} color="#6B7280" style={{ marginRight: 5 }} />
               <Text className="text-base text-gray-700">
                 {profile.phoneNumber}
               </Text>
@@ -376,7 +383,7 @@ const ProfileScreen: React.FC = () => {
 
           {profile.address && (
             <View className="flex-row items-center my-2">
-              <MapPin size={20} color="#6B7280" className="mr-3" />
+              <MapPin size={20} color="#6B7280" style={{ marginRight: 5 }} />
               <Text className="text-base text-gray-700">{profile.address}</Text>
             </View>
           )}
@@ -390,7 +397,7 @@ const ProfileScreen: React.FC = () => {
 
           {profile.birthdate && (
             <View className="flex-row items-center my-2 mt-2 mb-2">
-              <Calendar size={20} color="#6B7280" className="mr-2" />
+              <Calendar size={20} color="#6B7280" style={{ marginRight: 5 }} />
               <Text className="text-base text-gray-700">
                 {new Date(profile.birthdate).toLocaleDateString()}
               </Text>
@@ -399,7 +406,7 @@ const ProfileScreen: React.FC = () => {
 
           {profile.gender && (
             <View className="flex-row items-center my-2">
-              <UserIcon size={20} color="#6B7280" className="mr-3" />
+              <UserIcon size={20} color="#6B7280" style={{ marginRight: 5 }} />
               <Text className="text-base text-gray-700">{profile.gender}</Text>
             </View>
           )}

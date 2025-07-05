@@ -17,7 +17,7 @@ import { AuthProvider } from "../context/AuthContext";
 import Header from "../components/Header";
 import CustomDrawerContent from "../components/CustomDrawerContent";
 
-import { Home, LogIn, UserPlus } from "lucide-react-native";
+import { Home, LogIn, UserPlus, Users } from "lucide-react-native"; // <--- NEW: Import Users icon
 
 import "../global.css";
 
@@ -37,7 +37,7 @@ export default function RootLayout() {
         <Drawer
           initialRouteName="(tabs)"
           screenOptions={{
-            headerShown: false,
+            headerShown: false, // Default to hidden, individual screens override
             drawerType: "slide",
             drawerStyle: {
               backgroundColor: "#FFFFFF",
@@ -48,7 +48,7 @@ export default function RootLayout() {
           <Drawer.Screen
             name="(tabs)"
             options={{
-              headerShown: true,
+              headerShown: true, // Show header for tabs
               header: ({ navigation }) => {
                 const state = navigation.getState();
                 const tabsRoute = state.routes.find(
@@ -83,7 +83,6 @@ export default function RootLayout() {
                   } else if (activeTabRouteName === "profile") {
                     currentTabTitle = "My Profile";
                   } else if (activeTabRouteName === "jobs") {
-                    // Add this for the jobs tab
                     currentTabTitle = "Jobs";
                   } else {
                     currentTabTitle = activeTabRouteName ?? "Feed";
@@ -167,6 +166,40 @@ export default function RootLayout() {
               swipeEnabled: false,
             }}
           />
+
+          {/* Admin Dashboard Screen */}
+          <Drawer.Screen
+            name="admin/dashboard"
+            options={{
+              headerShown: true, // Show header for this screen
+              title: "Admin Dashboard",
+              drawerLabel: "Admin Dashboard",
+              drawerIcon: ({ focused, color, size }) => (
+                <Users size={size} color={focused ? "#2563EB" : color} /> // Use Users icon
+              ),
+            }}
+          />
+
+          {/* Admin Edit User Screen */}
+          <Drawer.Screen
+            name="admin/edit-user"
+            options={{
+              headerShown: false, // Custom header implemented in the screen itself
+              drawerLabel: () => null, // Hide from drawer menu
+              swipeEnabled: false,
+            }}
+          />
+
+          {/* --- NEW: Admin Add User Screen --- */}
+          <Drawer.Screen
+            name="admin/add-user" // This matches the file structure: admin/add-user.tsx
+            options={{
+              headerShown: false, // Custom header implemented in the screen itself
+              drawerLabel: () => null, // Hide from drawer menu
+              swipeEnabled: false, // Prevent swiping to this screen from drawer
+            }}
+          />
+          {/* --- END NEW --- */}
 
           {/* Edit Profile Screen (hidden from drawer) */}
           <Drawer.Screen

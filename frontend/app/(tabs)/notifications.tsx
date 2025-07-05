@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../../context/AuthContext";
-import { Bell, Mail, MailOpen, Briefcase, Check } from "lucide-react-native"; // Import Check icon
+import { Bell, Mail, MailOpen, Briefcase, Check } from "lucide-react-native";
 
 // --- IMPORTANT: CONFIGURE YOUR BACKEND API BASE URL HERE ---
 const API_BASE_URL = "http://192.168.178.34:5130";
@@ -287,9 +287,11 @@ const NotificationsScreen: React.FC = () => {
           >
             {/* Icon for notification status */}
             {notification.isRead ? (
-              <MailOpen size={24} color="#6B7280" className="mr-4" />
+              // --- MODIFIED: Added explicit style for marginRight ---
+              <MailOpen size={24} color="#6B7280" style={{ marginRight: 12 }} />
             ) : (
-              <Mail size={24} color="#2563EB" className="mr-4" />
+              // --- MODIFIED: Added explicit style for marginRight ---
+              <Mail size={24} color="#2563EB" style={{ marginRight: 12 }} />
             )}
             <View className="flex-1">
               <Text
@@ -301,7 +303,12 @@ const NotificationsScreen: React.FC = () => {
               </Text>
               {notification.jobTitle && (
                 <View className="flex-row items-center mt-1">
-                  <Briefcase size={14} color="#6B7280" className="mr-2" />
+                  {/* --- MODIFIED: Added explicit style for marginRight --- */}
+                  <Briefcase
+                    size={14}
+                    color="#6B7280"
+                    style={{ marginRight: 5 }}
+                  />
                   <Text className="text-xs text-gray-500">
                     Job: {notification.jobTitle}
                   </Text>
@@ -314,10 +321,9 @@ const NotificationsScreen: React.FC = () => {
             {!notification.isRead && (
               <TouchableOpacity
                 onPress={() => markAsRead(notification.id)}
-                className="ml-4 p-2 bg-blue-500 rounded-full flex items-center justify-center aspect-square" // Added padding, aspect-square for perfect circle
+                className="ml-4 p-2 bg-blue-500 rounded-full flex items-center justify-center aspect-square"
               >
-                <Check size={20} color="white" />{" "}
-                {/* Check icon instead of text */}
+                <Check size={20} color="white" />
               </TouchableOpacity>
             )}
           </TouchableOpacity>
