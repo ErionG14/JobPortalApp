@@ -1,5 +1,5 @@
 // frontend/components/FeedScreen.tsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
+  RefreshControl, // Import RefreshControl
 } from "react-native";
 import {
   ThumbsUp,
@@ -16,18 +17,40 @@ import {
   FileText,
   UserCircle,
 } from "lucide-react-native";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/AuthContext"; // Corrected relative path
+import { useFocusEffect, useRouter } from "expo-router"; // Import useRouter
 
 // --- IMPORTANT: CONFIGURE YOUR BACKEND API BASE URL HERE ---
 const API_BASE_URL = "http://192.168.178.34:5130"; // <--- ENSURE THIS IS YOUR CORRECT BACKEND URL
 
+// --- Post Interface (Matching backend's PostDisplayDTO fields) ---
+interface Post {
+  id: number;
+  description: string;
+  imageUrl: string | null;
+  createdAt: string;
+  updatedAt: string;
+  userId: string;
+  userName: string;
+  userFirstName: string; // Corrected to match backend DTO
+  userLastName: string; // Corrected to match backend DTO
+  userImage: string | null; // Corrected to match backend DTO
+  // Keeping these as placeholders as per your decision not to implement for now
+  likesCount: number;
+  isLikedByCurrentUser: boolean;
+  commentsCount: number;
+  comments: any[]; // Or Comment[] if you define it
+}
+
 interface FeedScreenProps {}
 
 const FeedScreen: React.FC<FeedScreenProps> = () => {
-  const { user } = useAuth();
-  const [posts, setPosts] = useState<any[]>([]);
+  const { user, signOut } = useAuth(); // Get signOut from AuthContext
+  const router = useRouter(); // Initialize useRouter
+  const [posts, setPosts] = useState<Post[]>([]); // Use the defined Post interface
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false); // New state for RefreshControl
 
   const getTimeAgo = (createdAt: string) => {
     const postDate = new Date(createdAt);
@@ -47,35 +70,61 @@ const FeedScreen: React.FC<FeedScreenProps> = () => {
     return `${years}y ago`;
   };
 
-  const fetchPosts = async () => {
+  // Made fetchPosts a useCallback for RefreshControl and useFocusEffect
+  const fetchPosts = useCallback(async () => {
     setLoading(true);
     setError(null);
+    setRefreshing(true); // Indicate that refresh is in progress
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/Post/GetAllPosts`);
+      const response = await fetch(`${API_BASE_URL}/api/Post/GetAllPosts`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          ...(user?.token && { Authorization: `Bearer ${user.token}` }), // Include token if available
+        },
+      });
 
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.Message || "Failed to fetch posts.");
       }
 
-      const data = await response.json();
+      const data: Post[] = await response.json(); // Cast to Post[]
       setPosts(data);
       console.log("Fetched posts:", data);
     } catch (err: any) {
       console.error("Error fetching posts:", err);
       setError(err.message || "An unexpected error occurred.");
       Alert.alert("Error", err.message || "Failed to load posts.");
+      // Handle unauthorized specifically
+      if (err.message.includes("Unauthorized") && user?.token) {
+        signOut(); // Sign out the user
+        router.replace("/login"); // Redirect to login
+      }
     } finally {
       setLoading(false);
+      setRefreshing(false); // End refreshing indicator
     }
-  };
+  }, [user, signOut, router]); // Added dependencies
 
-  useEffect(() => {
+  // Use useFocusEffect to refetch posts when the tab comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      fetchPosts();
+      return () => {
+        // Optional cleanup function
+      };
+    }, [fetchPosts])
+  );
+
+  // Handler for pull-to-refresh
+  const onRefresh = useCallback(() => {
     fetchPosts();
-  }, []);
+  }, [fetchPosts]);
 
-  if (loading) {
+  if (loading && !refreshing) {
+    // Show full loading indicator only if not just refreshing
     return (
       <View className="flex-1 justify-center items-center bg-gray-50">
         <ActivityIndicator size="large" color="#2563EB" />
@@ -100,13 +149,20 @@ const FeedScreen: React.FC<FeedScreenProps> = () => {
     );
   }
 
-  if (posts.length === 0) {
+  if (posts.length === 0 && !refreshing) {
+    // Show "No posts" only if not refreshing and no posts
     return (
       <View className="flex-1 justify-center items-center bg-gray-50">
         <FileText size={48} color="#9CA3AF" />
         <Text className="mt-4 text-gray-600 text-lg">
           No posts yet. Be the first to create one!
         </Text>
+        <TouchableOpacity
+          onPress={fetchPosts}
+          className="bg-blue-500 py-3 px-6 rounded-lg mt-4"
+        >
+          <Text className="text-white text-base font-semibold">Refresh</Text>
+        </TouchableOpacity>
       </View>
     );
   }
@@ -115,26 +171,39 @@ const FeedScreen: React.FC<FeedScreenProps> = () => {
     <ScrollView
       className="flex-1 bg-gray-50"
       contentContainerStyle={{ paddingVertical: 8, paddingHorizontal: 16 }}
+      refreshControl={
+        // --- ADDED: RefreshControl ---
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
     >
       {posts.map((post) => (
         <View key={post.id} className="bg-white rounded-lg p-4 mb-2 shadow-sm">
           {/* Post Header Section (Profile info and time) */}
           <View className="flex-row items-center mb-2">
             {/* Conditional rendering for Profile Image/Icon */}
-            {post.userImage ? (
+            {post.userImage ? ( // --- CORRECTED: Using post.userImage ---
               <Image
                 source={{ uri: post.userImage }}
                 className="w-10 h-10 rounded-full mr-2"
                 resizeMode="cover"
+                onError={(e) =>
+                  console.log(
+                    "User Image Load Error:",
+                    e.nativeEvent.error,
+                    "URL:",
+                    post.userImage
+                  )
+                }
               />
             ) : (
               <View className="w-10 h-10 rounded-full bg-gray-200 mr-2 flex justify-center items-center">
-                <UserCircle size={28} color="#6B7280" />{" "}
+                <UserCircle size={28} color="#6B7280" />
               </View>
             )}
             <View className="flex-1">
               <Text className="text-base font-bold text-gray-800">
-                {post.userFirstName} {post.userLastName}
+                {post.userFirstName} {post.userLastName}{" "}
+                {/* --- CORRECTED: Using userFirstName and userLastName --- */}
               </Text>
               <Text className="text-sm text-gray-600">
                 @{post.userName || "User"}
@@ -142,7 +211,7 @@ const FeedScreen: React.FC<FeedScreenProps> = () => {
             </View>
             <Text className="text-xs text-gray-500">
               {getTimeAgo(post.createdAt)}
-            </Text>{" "}
+            </Text>
           </View>
 
           {/* Post Body Section (Text content and optional image) */}
@@ -158,6 +227,14 @@ const FeedScreen: React.FC<FeedScreenProps> = () => {
                 }}
                 className="w-full h-48 rounded-md mt-2"
                 resizeMode="cover"
+                onError={(e) =>
+                  console.log(
+                    "Post Image Load Error:",
+                    e.nativeEvent.error,
+                    "URL:",
+                    post.imageUrl
+                  )
+                }
               />
             )}
           </View>
