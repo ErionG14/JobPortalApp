@@ -15,7 +15,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useAuth } from "../context/AuthContext";
 import * as ImagePicker from "expo-image-picker";
 import * as FileSystem from "expo-file-system";
-import { Image as ImageIcon, XCircle } from "lucide-react-native"; // XCircle for removing image
+import { Image as ImageIcon, XCircle } from "lucide-react-native";
 
 // --- IMPORTANT: CONFIGURE YOUR BACKEND API BASE URL AND CLOUDINARY SETTINGS HERE ---
 const API_BASE_URL = "http://192.168.178.34:5130"; // <--- ENSURE THIS IS YOUR CORRECT BACKEND URL
@@ -252,7 +252,7 @@ const EditPostScreen: React.FC = () => {
               resizeMode="cover"
             />
             <TouchableOpacity
-              onPress={() => setPostImageUrl(null)} // Option to remove image
+              onPress={() => setPostImageUrl(null)}
               className="absolute top-2 right-2 bg-red-500 p-1 rounded-full z-10"
               disabled={loading}
             >

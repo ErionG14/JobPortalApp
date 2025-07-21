@@ -89,7 +89,7 @@ const AdminDashboardScreen: React.FC = () => {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${user.token}`, // Admin token required
+          Authorization: `Bearer ${user.token}`,
         },
       });
 
@@ -452,7 +452,6 @@ const AdminDashboardScreen: React.FC = () => {
   );
 };
 
-// Add StyleSheet for custom FAB shadow and centering
 const styles = StyleSheet.create({
   fabShadow: {
     shadowColor: "#000",
@@ -479,7 +478,7 @@ const styles = StyleSheet.create({
         elevation: 12,
       },
     }),
-    alignSelf: "center", // Centers the item horizontally within its parent
+    alignSelf: "center",
   },
 });
 

@@ -7,11 +7,10 @@ import { usePathname, useRouter } from "expo-router";
 
 import {
   Home,
-  Search, // Keep Search icon as requested
+  Search,
   Plus,
   Bell,
   User,
-  // Briefcase, // No need to import Briefcase if Search icon is kept for Jobs
 } from "lucide-react-native";
 
 type CustomTabBarProps = BottomTabBarProps;
@@ -35,8 +34,7 @@ const CustomTabBar: React.FC<CustomTabBarProps> = ({
   const getIconColor = (tabName: string) => {
     const route = state.routes.find((r) => r.name === tabName);
     const isFocused = state.index === state.routes.indexOf(route as any);
-    // You might want to change the focused color to something more vibrant than gray
-    return isFocused ? "#2563EB" : "#9CA3AF"; // Changed focused color to blue-600 equivalent
+    return isFocused ? "#2563EB" : "#9CA3AF";
   };
 
   const getAddButtonColor = (tabName: string) => {
@@ -56,7 +54,6 @@ const CustomTabBar: React.FC<CustomTabBarProps> = ({
 
           const onPress = () => {
             if (tab.isSpecial) {
-              // For special tabs like 'create-post', navigate directly
               navigation.navigate(tab.name as any);
               return;
             }
@@ -68,7 +65,6 @@ const CustomTabBar: React.FC<CustomTabBarProps> = ({
             });
 
             if (!isFocused && !event.defaultPrevented) {
-              // Construct the path for non-special tabs
               const routePath =
                 tab.name === "index" ? "/" : `/(tabs)/${tab.name}`;
               router.push(routePath as any);
@@ -96,7 +92,7 @@ const CustomTabBar: React.FC<CustomTabBarProps> = ({
                     tab.name
                   )}`}
                   style={{
-                    shadowColor: "#4CAF50", // Green shadow for Plus button
+                    shadowColor: "#4CAF50",
                     shadowOffset: { width: 0, height: 4 },
                     shadowOpacity: 0.3,
                     shadowRadius: 5,

@@ -100,7 +100,6 @@ const AdminEditUserScreen: React.FC = () => {
       return;
     }
 
-    // Parse user data passed via navigation
     if (userParam) {
       try {
         const parsedUser: UserData = JSON.parse(userParam as string);
@@ -113,7 +112,7 @@ const AdminEditUserScreen: React.FC = () => {
           address: parsedUser.address || "",
           birthdate: parsedUser.birthdate
             ? new Date(parsedUser.birthdate).toISOString().split("T")[0]
-            : "", // Format to YYYY-MM-DD
+            : "",
           gender: parsedUser.gender || "",
           phoneNumber: parsedUser.phoneNumber || "",
           role: parsedUser.role || "",
@@ -127,23 +126,20 @@ const AdminEditUserScreen: React.FC = () => {
     }
   }, [userParam, currentUser, router, signOut]);
 
-  // Handle form field changes
   const handleChange = (name: keyof UserUpdateDto, value: string) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Handle date change from DatePicker
   const onDateChange = (event: any, selectedDate?: Date) => {
-    setShowDatePicker(Platform.OS === "ios"); // Hide picker for Android on selection, keep open for iOS
+    setShowDatePicker(Platform.OS === "ios");
     if (selectedDate) {
       setFormData((prev) => ({
         ...prev,
-        birthdate: selectedDate.toISOString().split("T")[0], // Format to YYYY-MM-DD
+        birthdate: selectedDate.toISOString().split("T")[0],
       }));
     }
   };
 
-  // --- Handle User Update Submission ---
   const handleSubmit = async () => {
     if (loadError) {
       Alert.alert("Error", loadError);
@@ -155,7 +151,6 @@ const AdminEditUserScreen: React.FC = () => {
       return;
     }
 
-    // Basic validation
     if (!formData.username || !formData.email || !formData.role) {
       Alert.alert(
         "Validation Error",
@@ -250,7 +245,6 @@ const AdminEditUserScreen: React.FC = () => {
     }
   };
 
-  // --- Render Loading/Error/Access Denied States ---
   if (!initialUserData && !loadError) {
     return (
       <SafeAreaView className="flex-1 justify-center items-center bg-gray-50">
@@ -425,7 +419,7 @@ const AdminEditUserScreen: React.FC = () => {
               className="flex-1 text-base text-gray-800"
               placeholder="Select Birthdate"
               value={formData.birthdate || ""}
-              editable={false} // Make it not editable directly
+              editable={false}
             />
           </TouchableOpacity>
           {showDatePicker && (

@@ -95,7 +95,7 @@ public class UserController : ControllerBase
             Birthdate = model.Birthdate,
             Gender = model.Gender,
             PhoneNumber = model.PhoneNumber,
-            Role = model.Role // Assuming Role property exists on User model and is handled
+            Role = model.Role
         };
 
         var result = await _userManager.CreateAsync(user, model.Password);

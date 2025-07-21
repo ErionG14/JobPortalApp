@@ -40,7 +40,7 @@ namespace backend.DBContext
             {
                 var adminUser = new User
                 {
-                    Id = Guid.NewGuid().ToString(), // Generate a unique ID
+                    Id = Guid.NewGuid().ToString(),
                     UserName = adminEmail,
                     Name = "Admin",
                     Surname = "admin",

@@ -181,7 +181,6 @@ const JobsScreen: React.FC = () => {
     [user, router]
   );
 
-  // --- Filter Logic ---
   const filteredJobs = useMemo(() => {
     if (!searchQuery) {
       return jobs;
@@ -236,7 +235,6 @@ const JobsScreen: React.FC = () => {
       {/* Search Bar */}
       <View className="flex-row items-center bg-white rounded-lg px-4 py-2 mt-2 mb-4 shadow-sm border border-gray-200">
         <Search size={20} color="#6B7280" style={{ marginRight: 10 }} />{" "}
-        {/* Added explicit marginRight */}
         <TextInput
           className="flex-1 text-base text-gray-800"
           placeholder="Search jobs (title, company, location, manager...)"
@@ -304,19 +302,16 @@ const JobsScreen: React.FC = () => {
             </Text>
 
             <View className="flex-row items-center mb-2">
-              {/* --- MODIFIED: Added explicit style for marginRight --- */}
               <Building size={18} color="#6B7280" style={{ marginRight: 5 }} />
               <Text className="text-sm text-gray-600">{job.companyName}</Text>
             </View>
 
             <View className="flex-row items-center mb-2">
-              {/* --- MODIFIED: Added explicit style for marginRight --- */}
               <MapPin size={18} color="#6B7280" style={{ marginRight: 5 }} />
               <Text className="text-sm text-gray-600">{job.location}</Text>
             </View>
 
             <View className="flex-row items-center mb-2">
-              {/* --- MODIFIED: Added explicit style for marginRight --- */}
               <Briefcase
                 size={18}
                 color="#6B7280"
@@ -329,7 +324,6 @@ const JobsScreen: React.FC = () => {
 
             {job.salaryMin !== null && job.salaryMax !== null && (
               <View className="flex-row items-center mb-2">
-                {/* --- MODIFIED: Added explicit style for marginRight --- */}
                 <DollarSign
                   size={18}
                   color="#6B7280"
@@ -343,7 +337,6 @@ const JobsScreen: React.FC = () => {
             )}
             {job.salaryMin !== null && job.salaryMax === null && (
               <View className="flex-row items-center mb-2">
-                {/* --- MODIFIED: Added explicit style for marginRight --- */}
                 <DollarSign
                   size={18}
                   color="#6B7280"
@@ -356,7 +349,6 @@ const JobsScreen: React.FC = () => {
             )}
             {job.salaryMax !== null && job.salaryMin === null && (
               <View className="flex-row items-center mb-2">
-                {/* --- MODIFIED: Added explicit style for marginRight --- */}
                 <DollarSign
                   size={18}
                   color="#6B7280"
@@ -369,7 +361,6 @@ const JobsScreen: React.FC = () => {
             )}
 
             <View className="flex-row items-center mt-2 border-t border-gray-100 pt-3">
-              {/* --- MODIFIED: Added explicit style for marginRight --- */}
               <Calendar size={18} color="#6B7280" style={{ marginRight: 5 }} />
               <Text className="text-sm text-gray-600">
                 Apply by:{" "}

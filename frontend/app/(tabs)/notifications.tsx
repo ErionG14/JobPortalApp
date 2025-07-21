@@ -16,14 +16,12 @@ import { Bell, Mail, MailOpen, Briefcase, Check } from "lucide-react-native";
 
 // --- IMPORTANT: CONFIGURE YOUR BACKEND API BASE URL HERE ---
 const API_BASE_URL = "http://192.168.178.34:5130";
-
-// Interface for Notification data (matching backend.DTO.NotificationDTO)
 interface Notification {
   id: number;
   message: string;
-  type: string; // e.g., "JobApplicationConfirmation", "SystemAlert"
+  type: string;
   isRead: boolean;
-  createdAt: string; // ISO string
+  createdAt: string;
   jobId: number | null;
   jobTitle: string | null;
 }
@@ -35,7 +33,6 @@ const NotificationsScreen: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
-  // Helper function to format time ago
   const getTimeAgo = (dateString: string) => {
     const notificationDate = new Date(dateString);
     const now = new Date();
@@ -56,7 +53,6 @@ const NotificationsScreen: React.FC = () => {
     return `${years}y ago`;
   };
 
-  // Function to fetch notifications
   const fetchNotifications = useCallback(async () => {
     if (!user || !user.token) {
       setError("You must be logged in to view notifications.");
@@ -129,7 +125,6 @@ const NotificationsScreen: React.FC = () => {
     }
   }, [user, signOut]);
 
-  // Function to mark a notification as read
   const markAsRead = useCallback(
     async (notificationId: number) => {
       if (!user || !user.token) {
@@ -139,8 +134,6 @@ const NotificationsScreen: React.FC = () => {
         );
         return;
       }
-
-      // Optimistically update UI
       setNotifications((prev) =>
         prev.map((n) => (n.id === notificationId ? { ...n, isRead: true } : n))
       );
@@ -164,7 +157,6 @@ const NotificationsScreen: React.FC = () => {
             response.status,
             errorText
           );
-          // Revert optimistic update if API call fails
           setNotifications((prev) =>
             prev.map((n) =>
               n.id === notificationId ? { ...n, isRead: false } : n
@@ -186,7 +178,6 @@ const NotificationsScreen: React.FC = () => {
           }
           throw new Error(errorMessage);
         }
-        // No need to parse result, just confirm success
         console.log(
           `Notification ${notificationId} marked as read successfully.`
         );
@@ -287,10 +278,8 @@ const NotificationsScreen: React.FC = () => {
           >
             {/* Icon for notification status */}
             {notification.isRead ? (
-              // --- MODIFIED: Added explicit style for marginRight ---
               <MailOpen size={24} color="#6B7280" style={{ marginRight: 12 }} />
             ) : (
-              // --- MODIFIED: Added explicit style for marginRight ---
               <Mail size={24} color="#2563EB" style={{ marginRight: 12 }} />
             )}
             <View className="flex-1">
@@ -303,7 +292,6 @@ const NotificationsScreen: React.FC = () => {
               </Text>
               {notification.jobTitle && (
                 <View className="flex-row items-center mt-1">
-                  {/* --- MODIFIED: Added explicit style for marginRight --- */}
                   <Briefcase
                     size={14}
                     color="#6B7280"

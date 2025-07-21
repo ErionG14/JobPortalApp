@@ -66,7 +66,6 @@ const AdminAddUserScreen: React.FC = () => {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
 
-  // --- Role-Based Access Control ---
   useEffect(() => {
     if (!currentUser) {
       Alert.alert(
@@ -83,12 +82,10 @@ const AdminAddUserScreen: React.FC = () => {
     }
   }, [currentUser, router, signOut]);
 
-  // Handle form field changes
   const handleChange = (name: keyof AddUserByAdminDto, value: string) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Handle date change from DatePicker
   const onDateChange = (event: any, selectedDate?: Date) => {
     setShowDatePicker(Platform.OS === "ios");
     if (selectedDate) {
@@ -99,7 +96,6 @@ const AdminAddUserScreen: React.FC = () => {
     }
   };
 
-  // --- Handle User Add Submission ---
   const handleSubmit = async () => {
     if (loadError) {
       Alert.alert("Error", loadError);
@@ -218,7 +214,6 @@ const AdminAddUserScreen: React.FC = () => {
     }
   };
 
-  // --- Render Loading/Error/Access Denied States ---
   if (loadError) {
     return (
       <SafeAreaView className="flex-1 justify-center items-center bg-gray-50 p-4">
@@ -251,7 +246,7 @@ const AdminAddUserScreen: React.FC = () => {
           <ArrowLeft size={24} color="#333" />
         </TouchableOpacity>
         <Text className="text-xl font-bold text-gray-800">Add New User</Text>
-        <View className="w-8" /> {/* Spacer */}
+        <View className="w-8" />
       </View>
 
       <ScrollView contentContainerStyle={{ padding: 16 }}>

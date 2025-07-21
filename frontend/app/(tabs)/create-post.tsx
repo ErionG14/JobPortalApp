@@ -96,7 +96,6 @@ const CreatePostScreen: React.FC<CreatePostScreenProps> = () => {
         method: "POST",
         body: formData,
         headers: {
-          // Cloudinary handles Content-Type for FormData automatically
         },
       });
 

@@ -318,7 +318,7 @@ const EditProfileScreen: React.FC = () => {
               <UserCircle size={60} color="#6B7280" />
             </View>
           )}
-          {/* Image picker button - centered below the image with margin-top */}
+          {/* Image picker button */}
           <TouchableOpacity
             onPress={handleImagePick}
             className="bg-blue-500 p-3 rounded-full shadow-md mt-4 mb-2"

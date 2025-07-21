@@ -21,14 +21,8 @@ import {
   Users,
   Phone,
 } from "lucide-react-native";
-
-// Import DatePicker (for Android/iOS)
 import DateTimePicker from "@react-native-community/datetimepicker";
-
-// Import Picker (for dropdown)
 import { Picker } from "@react-native-picker/picker";
-
-// Import your CustomButton component
 import CustomButton from "../components/CustomButton";
 
 interface SignUpScreenProps {}
@@ -80,7 +74,6 @@ const SignUpScreen: React.FC<SignUpScreenProps> = () => {
     setLoading(true);
 
     try {
-      // Prepare the data payload for RegisterDTO
       const registerData = {
         username: username,
         name: name,
@@ -97,7 +90,6 @@ const SignUpScreen: React.FC<SignUpScreenProps> = () => {
       console.log("Attempting sign up with:", registerData);
 
       const response = await fetch(`${API_BASE_URL}/api/User/register`, {
-        // <--- API Call
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -263,7 +255,7 @@ const SignUpScreen: React.FC<SignUpScreenProps> = () => {
           />
         </View>
 
-        {/* Birthdate Input (Now with Date Picker) */}
+        {/* Birthdate Input */}
         <TouchableOpacity
           onPress={showDatepicker}
           className={inputWrapperClassName}
@@ -295,7 +287,7 @@ const SignUpScreen: React.FC<SignUpScreenProps> = () => {
           />
         )}
 
-        {/* Gender Dropdown (Using Picker) */}
+        {/* Gender Dropdown */}
         <View className={inputWrapperClassName}>
           <Users size={20} color="#6B7280" />
           <Picker

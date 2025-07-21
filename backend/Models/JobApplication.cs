@@ -8,26 +8,26 @@ public class JobApplication
     [Key]
     public int Id { get; set; }
 
-    [Required] // Good practice for clarity, though int is non-nullable by default
-    public int JobId { get; set; } // Foreign key to the Job
+    [Required]
+    public int JobId { get; set; }
     [ForeignKey("JobId")]
-    public Job Job { get; set; } // Navigation property
-
-    [Required] // <--- IMPORTANT: Add [Required] for string foreign keys
-    public string UserId { get; set; } // <--- CRITICAL CHANGE: Must be 'string'
-    [ForeignKey("UserId")]
-    public User User { get; set; } // <--- CRITICAL CHANGE: Must be 'ApplicationUser'
+    public Job Job { get; set; }
 
     [Required]
-    public DateTime ApplicationDate { get; set; } = DateTime.UtcNow; // When the application was submitted
+    public string UserId { get; set; }
+    [ForeignKey("UserId")]
+    public User User { get; set; }
+
+    [Required]
+    public DateTime ApplicationDate { get; set; } = DateTime.UtcNow;
 
     [Required]
     [StringLength(50)]
-    public string Status { get; set; } = "Pending"; // Default status
+    public string Status { get; set; } = "Pending";
     
-    [StringLength(2000)] // Example max length for a cover letter
-    public string? CoverLetter { get; set; } // Nullable if not always required
+    [StringLength(2000)]
+    public string? CoverLetter { get; set; }
 
-    [StringLength(500)] // Example max length for a URL
+    [StringLength(500)]
     public string? ResumeUrl { get; set; }
 }

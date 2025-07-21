@@ -11,7 +11,7 @@ import {
   Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useRouter, useLocalSearchParams } from "expo-router"; // Import useLocalSearchParams
+import { useRouter, useLocalSearchParams } from "expo-router";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useAuth } from "../context/AuthContext";
 import {
@@ -25,8 +25,6 @@ import {
 
 // --- IMPORTANT: CONFIGURE YOUR BACKEND API BASE URL HERE ---
 const API_BASE_URL = "http://192.168.178.34:5130";
-
-// Interface for the Job DTO (matching backend.DTO.JobDTO for editable fields)
 interface JobFormData {
   title: string;
   description: string;
@@ -35,12 +33,10 @@ interface JobFormData {
   salaryMin: number | null;
   salaryMax: number | null;
   companyName: string;
-  applicationDeadline: string; // Will send as ISO string (YYYY-MM-DD)
+  applicationDeadline: string;
 }
-
-// Interface for the full job data passed from MyPostedJobsScreen
 interface ManagerPostedJob {
-  id: number; // Job ID is crucial for update
+  id: number;
   title: string;
   description: string;
   location: string;
@@ -60,7 +56,7 @@ interface ManagerPostedJob {
 const EditJobScreen: React.FC = () => {
   const { user, signOut } = useAuth();
   const router = useRouter();
-  const { jobData } = useLocalSearchParams(); // Get jobData from route params
+  const { jobData } = useLocalSearchParams();
 
   const [formData, setFormData] = useState<JobFormData>({
     title: "",
@@ -72,13 +68,12 @@ const EditJobScreen: React.FC = () => {
     companyName: "",
     applicationDeadline: new Date().toISOString().split("T")[0],
   });
-  const [jobId, setJobId] = useState<number | null>(null); // To store the job ID
+  const [jobId, setJobId] = useState<number | null>(null);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [loading, setLoading] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [initialLoadError, setInitialLoadError] = useState<string | null>(null); // For errors during initial data parsing
+  const [initialLoadError, setInitialLoadError] = useState<string | null>(null);
 
-  // Effect to parse jobData and pre-fill form
   useEffect(() => {
     if (jobData) {
       try {
@@ -92,7 +87,6 @@ const EditJobScreen: React.FC = () => {
           salaryMin: parsedJob.salaryMin,
           salaryMax: parsedJob.salaryMax,
           companyName: parsedJob.companyName,
-          // Ensure applicationDeadline is formatted as YYYY-MM-DD
           applicationDeadline: parsedJob.applicationDeadline.split("T")[0],
         });
       } catch (e) {
@@ -104,7 +98,6 @@ const EditJobScreen: React.FC = () => {
     }
   }, [jobData]);
 
-  // Client-side validation (mirroring backend DTO attributes)
   const validateForm = () => {
     let newErrors: { [key: string]: string } = {};
     if (!formData.title) newErrors.title = "Job title is required.";
@@ -165,12 +158,12 @@ const EditJobScreen: React.FC = () => {
     if (name === "salaryMin" || name === "salaryMax") {
       setFormData({
         ...formData,
-        [name]: value === "" ? null : Number(value), // Convert to number, or null if empty
+        [name]: value === "" ? null : Number(value),
       });
     } else if (name === "applicationDeadline") {
       setFormData({
         ...formData,
-        [name]: (value as Date).toISOString().split("T")[0], // Format as YYYY-MM-DD
+        [name]: (value as Date).toISOString().split("T")[0],
       });
     } else {
       setFormData({
@@ -178,11 +171,11 @@ const EditJobScreen: React.FC = () => {
         [name]: value,
       });
     }
-    setErrors((prev) => ({ ...prev, [name]: "" })); // Clear error on change
+    setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
   const handleDateChange = (event: any, selectedDate?: Date) => {
-    setShowDatePicker(Platform.OS === "ios"); // Keep picker open on iOS, close on Android
+    setShowDatePicker(Platform.OS === "ios");
     if (selectedDate) {
       handleChange("applicationDeadline", selectedDate);
     }
@@ -204,18 +197,18 @@ const EditJobScreen: React.FC = () => {
     }
 
     setLoading(true);
-    setErrors({}); // Clear previous errors
+    setErrors({});
 
     try {
       const response = await fetch(
         `${API_BASE_URL}/api/Job/UpdateJob${jobId}`,
         {
-          method: "PUT", // Use PUT method
+          method: "PUT",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${user.token}`,
           },
-          body: JSON.stringify(formData), // Send formData (which matches JobDTO)
+          body: JSON.stringify(formData),
         }
       );
 
@@ -249,12 +242,12 @@ const EditJobScreen: React.FC = () => {
       const result = await response.json();
       Alert.alert("Success", result.Message || "Job updated successfully!");
       console.log("Job updated successfully:", result);
-      router.back(); // Go back to My Posted Jobs screen
+      router.back();
     } catch (err: any) {
       console.error("Error updating job:", err);
       setInitialLoadError(
         err.message || "An unexpected error occurred while updating the job."
-      ); // Use initialLoadError state for general errors
+      );
       Alert.alert("Error", err.message || "Failed to update job.");
       if (
         err.message.includes("Unauthorized") ||
@@ -271,7 +264,6 @@ const EditJobScreen: React.FC = () => {
     }
   };
 
-  // Render access denied or initial load error states
   if (!user || user.role !== "Manager") {
     return (
       <SafeAreaView className="flex-1 justify-center items-center bg-gray-50 p-4">
@@ -295,7 +287,7 @@ const EditJobScreen: React.FC = () => {
           Error: {initialLoadError}
         </Text>
         <TouchableOpacity
-          onPress={() => router.back()} // Go back if initial load failed
+          onPress={() => router.back()}
           className="bg-blue-500 py-3 px-6 rounded-lg mt-4"
         >
           <Text className="text-white text-base font-semibold">Go Back</Text>
@@ -304,7 +296,7 @@ const EditJobScreen: React.FC = () => {
     );
   }
 
-  // Show loading indicator while job data is being parsed/set
+  
   if (jobId === null) {
     return (
       <SafeAreaView className="flex-1 justify-center items-center bg-gray-50">
@@ -492,7 +484,7 @@ const EditJobScreen: React.FC = () => {
               mode="date"
               display="default"
               onChange={handleDateChange}
-              minimumDate={new Date()} // Cannot set a deadline in the past
+              minimumDate={new Date()}
             />
           )}
         </View>

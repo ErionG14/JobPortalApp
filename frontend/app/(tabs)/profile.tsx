@@ -125,7 +125,6 @@ const ProfileScreen: React.FC = () => {
     }
   }, [user, signOut, router]);
 
-  // --- NEW: Fetch user's own posts ---
   const fetchMyPosts = useCallback(async () => {
     if (!user || !user.token) {
       setErrorPosts("User not authenticated to fetch posts.");
@@ -163,14 +162,12 @@ const ProfileScreen: React.FC = () => {
       if (refreshing) setRefreshing(false);
     }
   }, [user, refreshing]);
-  // --- END Fetch user's own posts ---
 
   useFocusEffect(
     useCallback(() => {
       fetchProfile();
       fetchMyPosts();
       return () => {
-        // Cleanup if necessary
       };
     }, [fetchProfile, fetchMyPosts])
   );
@@ -192,7 +189,6 @@ const ProfileScreen: React.FC = () => {
     }
   };
 
-  // --- Handle Post Options (Edit/Delete) ---
   const handlePostOptions = (post: UserPost) => {
     Alert.alert(
       "Post Options",
@@ -272,7 +268,6 @@ const ProfileScreen: React.FC = () => {
       ]
     );
   };
-  // --- END Handle Post Options ---
 
   if (loadingProfile && !refreshing) {
     return (
@@ -320,24 +315,20 @@ const ProfileScreen: React.FC = () => {
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }
     >
-      {/* Main content card with increased horizontal padding and adjusted vertical padding */}
       <View className="bg-white rounded-lg shadow-md mx-4 mt-4 px-6 py-6">
         {/* Profile Header Section */}
         <View className="flex-row items-center mb-6 pt-4 mt-2">
-          {/* Profile Picture or Placeholder */}
           {profile.image ? (
-            // --- MODIFIED: Removed mr-4, added style for explicit margin ---
             <Image
               source={{ uri: profile.image }}
               className="w-20 h-20 rounded-full"
-              style={{ marginRight: 16 }} // Explicit margin-right
+              style={{ marginRight: 16 }}
               resizeMode="cover"
             />
           ) : (
-            // --- MODIFIED: Removed mr-4, added style for explicit margin ---
             <View
               className="w-20 h-20 rounded-full bg-gray-200 justify-center items-center"
-              style={{ marginRight: 16 }} // Explicit margin-right
+              style={{ marginRight: 16 }}
             >
               <UserCircle size={50} color="#6B7280" />
             </View>

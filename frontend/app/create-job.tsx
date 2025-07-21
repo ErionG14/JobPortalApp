@@ -26,7 +26,6 @@ import {
 // --- IMPORTANT: CONFIGURE YOUR BACKEND API BASE URL HERE ---
 const API_BASE_URL = "http://192.168.178.34:5130";
 
-// Interface for the Job DTO (matching backend.DTO.JobDTO)
 interface JobFormData {
   title: string;
   description: string;
@@ -35,7 +34,7 @@ interface JobFormData {
   salaryMin: number | null;
   salaryMax: number | null;
   companyName: string;
-  applicationDeadline: string; // Will send as ISO string
+  applicationDeadline: string;
 }
 
 const CreateJobScreen: React.FC = () => {
@@ -50,7 +49,7 @@ const CreateJobScreen: React.FC = () => {
     salaryMin: null,
     salaryMax: null,
     companyName: "",
-    applicationDeadline: new Date().toISOString().split("T")[0], // Default to today's date
+    applicationDeadline: new Date().toISOString().split("T")[0],
   });
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
@@ -58,7 +57,6 @@ const CreateJobScreen: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
 
-  // Client-side validation (mirroring backend DTO attributes)
   const validateForm = () => {
     let newErrors: { [key: string]: string } = {};
     if (!formData.title) newErrors.title = "Job title is required.";
@@ -119,12 +117,12 @@ const CreateJobScreen: React.FC = () => {
     if (name === "salaryMin" || name === "salaryMax") {
       setFormData({
         ...formData,
-        [name]: value === "" ? null : Number(value), // Convert to number, or null if empty
+        [name]: value === "" ? null : Number(value),
       });
     } else if (name === "applicationDeadline") {
       setFormData({
         ...formData,
-        [name]: (value as Date).toISOString().split("T")[0], // Format as YYYY-MM-DD
+        [name]: (value as Date).toISOString().split("T")[0],
       });
     } else {
       setFormData({
@@ -132,11 +130,11 @@ const CreateJobScreen: React.FC = () => {
         [name]: value,
       });
     }
-    setErrors((prev) => ({ ...prev, [name]: "" })); // Clear error on change
+    setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
   const handleDateChange = (event: any, selectedDate?: Date) => {
-    setShowDatePicker(Platform.OS === "ios"); // Keep picker open on iOS, close on Android
+    setShowDatePicker(Platform.OS === "ios");
     if (selectedDate) {
       handleChange("applicationDeadline", selectedDate);
     }
@@ -158,7 +156,7 @@ const CreateJobScreen: React.FC = () => {
     }
 
     setLoading(true);
-    setErrors({}); // Clear previous errors
+    setErrors({});
 
     try {
       const response = await fetch(`${API_BASE_URL}/api/Job/CreateJob`, {
