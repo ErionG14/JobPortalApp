@@ -18,5 +18,5 @@ You need a few things to get started with the project.
 2. **``Open terminal``** - [ Ctrl + ` ]
 3. Type **``cd frontend/``**
 4. Type **``npm install``**
-5. Type **``npm start``**
+5. Type **``npx expo start`` or ``npx expo start --clear`` wich also cleans the chache memory everytime you start the server for better functionality**
 6. Switch to the backend, and press **RUN**.
